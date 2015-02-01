@@ -11,7 +11,7 @@ from textblob import TextBlob
 
 print ( "Connecting to database\n" )
 
-engine = create_engine("postgresql+psycopg2://twitter:password@localhost:5433/twitter")
+engine = create_engine("postgresql+psycopg2://postgres:postgres@localhost:5432/twitterbot")
 
 print ( "Connected!\n" )
 
@@ -78,5 +78,5 @@ def get_quote():
   price_timer = threading.Timer( next_call - time.time() , get_quote )
   price_timer.start()
 
-#get_historic_data("AAPL")
-get_quote()
+get_historic_data("AAPL")
+#get_quote()
