@@ -33,13 +33,13 @@ class Tweet(Base):
 		return "<Tweet(user_id = {}, text= {}, retweet={}, retweet_count={}, timestamp={}, sentiment={})>".format(self.user_id, self.text, self.retweet, self.retweet_count, self.timestamp, self.sentiment)
 
 class User(Base):
-     __tablename__ = 'users'
+	__tablename__ = 'users'
 
-     id = Column(Integer, primary_key=True, index=True)
-     user_id = Column(BigInteger, unique=True)
-     username = Column(Text, unique=True)
-     followers = Column(Integer)
-     following = Column(Integer)
+	id = Column(Integer, primary_key=True, index=True)
+	user_id = Column(BigInteger, unique=True)
+	username = Column(Text, unique=True)
+	followers = Column(Integer)
+	following = Column(Integer)
 
-     def __repr__(self):
+	def __repr__(self):
 		return "<User(username='%s', followers='%s', following='%s')>" % (self.user_id, self.username, self.followers, self.following)

@@ -20,10 +20,10 @@ Base = declarative_base()
 Session = sessionmaker(bind=engine)
 session = Session()
 
-consumer_key = "TylYDYasSIRJ9RIo12Ir4oV8r"
-consumer_secret = "zKKxkRVMkgdnF3VPkvEc8RzzQt9EjdpTLOPs5XO2CGIZuruW4m"
-access_token = "105344276-MKAKZytLqQ3Y53AxV0ji6hyhsLA3dFig7ce5FKC2"
-access_token_secret = "HZLAI3XrWSvhBKHouXB1jSuoEsCT7N6NhAaOywarOQDJG"
+consumer_key = "rY3Q4lLIAcLRXPm66JoU2jL8X"
+consumer_secret = "xkTrpkamaiDQaiAdEvcvJLj6hmaLH0DL2m5bE4l4H7ROFuRKBC"
+access_token = "928665026-VghhFE4Xxovwv1Sz7Ivizdm6bGjEQn2yFGgd5TIy"
+access_token_secret = "xtdeTR1eEkSwlhPwj02OLle64kPFvBUYgfx9FsuaozZdI"
 
 count = 0
 positive_count = 0
@@ -92,7 +92,7 @@ def get_sentiment(created_at, username, user_id, favorited, favorite_count, retw
 		session.add(tweet_data)
 		session.commit()
   		#timestamp_existing = session.query(Tweets).filter_by(timestamp=timestamp).one()
-  		print(user.id)
+		print(user.id)
 	else:
 	     user_data = User( user_id=user_id, username=username, followers=followers, following=following)
 	     session.add(user_data)
@@ -159,7 +159,7 @@ while True:  #Endless loop: personalize to suit your own purposes
     except:
         #e = sys.exc_info()[0]  #Get exception info (optional)
         #print ('ERROR:',e ) #Print exception info (optional)
-        print traceback.format_exc()
+        #print traceback.format_exc()
         print("sleeping")
         time.sleep(10)
         twitterStream = Stream(auth, listener())
