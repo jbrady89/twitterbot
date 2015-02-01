@@ -85,26 +85,24 @@ def get_sentiment(created_at, username, user_id, favorited, favorite_count, retw
 	#http://stackoverflow.com/questions/5729500/how-does-sqlalchemy-handle-unique-constraint-in-table-definition
 	timestamp = time.time()
 	timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
-	try:
-		# if true, user  or timestamp already exists
-		user = session.query(User).filter_by(username=username).one()
+	user = session.query(User).filter_by(username=username).first()
+	if user:
+		# insert the new data in db
+		tweet_data = Tweet( user_id=user.id, text=text, retweet=retweeted, retweet_count=retweet_count, timestamp=timestamp, sentiment=polarity )
+		session.add(tweet_data)
+		session.commit()
   		#timestamp_existing = session.query(Tweets).filter_by(timestamp=timestamp).one()
   		print(user.id)
-	except:
+	else:
 	     user_data = User( user_id=user_id, username=username, followers=followers, following=following)
 	     session.add(user_data)
 	     session.commit()
-	     user = session.query(User).filter_by(username=username).one()
+	     user = session.query(User).filter_by(username=username).first()
 	     tweet_data = Tweet( user_id=user.id, text=text, retweet=retweeted, retweet_count=retweet_count,timestamp=timestamp, sentiment=polarity )
 	     session.add(tweet_data)
 	     session.commit()
 	     return
   		#print("name exists: {}, time exists: {} \n \n".format(name_existing, timestamp_existing))
-  		
-	# insert the new data in db
-	tweet_data = Tweet( user_id=user.id, text=text, retweet=retweeted, retweet_count=retweet_count, timestamp=timestamp, sentiment=polarity )
-	session.add(tweet_data)
-	session.commit()
 
 def process_data(data):
 	tweet = json.loads(data)
