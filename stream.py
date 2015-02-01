@@ -2,6 +2,7 @@ import datetime, threading, time, json, requests, langid, sys, traceback
 from tweepy import Stream, OAuthHandler, StreamListener
 from sqlalchemy import create_engine, Column, Integer, Float, Text, Boolean
 from sqlalchemy import DateTime
+from sqlalchemy import or_
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_declarative import Tweet, User, Price
@@ -86,23 +87,22 @@ def get_sentiment(created_at, username, user_id, favorited, favorite_count, retw
 	timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
 	try:
 		# if true, user  or timestamp already exists
-	     id = session.query(User).filter(or_(username=username, user_id=user_id)).one().id
+		user = session.query(User).filter_by(username=username).one()
   		#timestamp_existing = session.query(Tweets).filter_by(timestamp=timestamp).one()
-	     print(id)
+  		print(user.id)
 	except:
 	     user_data = User( user_id=user_id, username=username, followers=followers, following=following)
 	     session.add(user_data)
 	     session.commit()
-	     id = session.query(User).filter_by(username=username).one().id
-	     tweet_data = Tweet( user_id=id, text=text, retweet=retweeted, retweet_count=retweet_count,timestamp=timestamp, sentiment=polarity )
+	     user = session.query(User).filter_by(username=username).one()
+	     tweet_data = Tweet( user_id=user.id, text=text, retweet=retweeted, retweet_count=retweet_count,timestamp=timestamp, sentiment=polarity )
 	     session.add(tweet_data)
 	     session.commit()
-  		#print("username ({}) doesn't exist".format(user))
-	return
+	     return
   		#print("name exists: {}, time exists: {} \n \n".format(name_existing, timestamp_existing))
   		
 	# insert the new data in db
-	tweet_data = Tweet( user_id=id, text=text, retweet=retweeted, retweet_count=retweet_count, timestamp=timestamp, sentiment=polarity )
+	tweet_data = Tweet( user_id=user.id, text=text, retweet=retweeted, retweet_count=retweet_count, timestamp=timestamp, sentiment=polarity )
 	session.add(tweet_data)
 	session.commit()
 
