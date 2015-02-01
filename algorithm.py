@@ -7,9 +7,9 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy_declarative import Price, Tweet, User
 from textblob import TextBlob
 
+username = "postgres"
 password = "postgres"
 port = "5432"
-username = "postgres"
 db = "twitterbot"
 
 print ( "Connecting to database\n")

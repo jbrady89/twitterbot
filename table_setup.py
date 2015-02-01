@@ -3,9 +3,9 @@ from sqlalchemy import create_engine
 from sqlalchemy import MetaData, Column, Table
 from sqlalchemy import Integer, DateTime, Boolean, Text, Float, BigInteger
 
+username = "postgres"
 password = "postgres"
 port = "5432"
-username = "postgres"
 db = "twitterbot"
 
 #create new db

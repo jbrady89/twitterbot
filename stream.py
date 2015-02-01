@@ -13,9 +13,9 @@ consumer_secret = "zKKxkRVMkgdnF3VPkvEc8RzzQt9EjdpTLOPs5XO2CGIZuruW4m"
 access_token = "105344276-MKAKZytLqQ3Y53AxV0ji6hyhsLA3dFig7ce5FKC2"
 access_token_secret = "HZLAI3XrWSvhBKHouXB1jSuoEsCT7N6NhAaOywarOQDJG"
 
+username = "postgres"
 password = "postgres"
 port = "5432"
-username = "postgres"
 db = "twitterbot"
 
 print ( "Connecting to database\n")
