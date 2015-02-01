@@ -12,7 +12,7 @@ from textblob import TextBlob
 
 print ( "Connecting to database\n")
 
-engine = create_engine("postgresql+psycopg2://postgres:postgres@localhost:5432/twitterbot")
+engine = create_engine("postgresql+psycopg2://postgres:password@localhost:5433/twitterbot")
 
 print ( "Connected!\n" )
 
