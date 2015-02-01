@@ -22,6 +22,7 @@ class Tweet(Base):
 
 	id = Column(Integer, primary_key=True, index=True)
 	user_id = Column(Integer, index=True)
+	tweet_id = Column(BigInteger, index=True, unique=True)
 	text = Column(Text)
 	retweet = Column(Boolean)
 	retweet_count = Column(Integer)

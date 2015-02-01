@@ -32,7 +32,7 @@ neutral_count  = 0
 polarity_total = 0
 polarity_average = 0
 total = 0
-def get_sentiment(created_at, username, user_id, favorited, favorite_count, retweeted, retweet_count, followers, following, text):
+def get_sentiment(created_at, username, user_id, tweet_id, favorited, favorite_count, retweeted, retweet_count, followers, following, text):
 	global count
 	global positive_count
 	global negative_count
@@ -108,7 +108,7 @@ def process_data(data):
 	tweet = json.loads(data)
 
 	#output formatted json to the console
-	#print( json.dumps( tweet, sort_keys=True, indent=4, separators=(',', ': ') ) )
+	print( json.dumps( tweet, sort_keys=True, indent=4, separators=(',', ': ') ) )
 
 	username = tweet['user']['screen_name']
 	followers = tweet['user']['followers_count']
@@ -120,8 +120,9 @@ def process_data(data):
 	created_at = tweet['created_at']
 	user_id = tweet['user']['id']
 	text = tweet['text']
+	tweet_id = tweet['id']
 
-	get_sentiment(created_at, username, user_id, favorited, favorite_count, retweeted, retweet_count, followers, following, text)
+	get_sentiment(created_at, username, user_id, tweet_id, favorited, favorite_count, retweeted, retweet_count, followers, following, text)
 
 
 class listener(StreamListener):
