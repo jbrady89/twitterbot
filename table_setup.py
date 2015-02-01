@@ -29,6 +29,7 @@ prices_table=Table('prices',metadata,
 
 tweets_table=Table('tweets',metadata,
             Column('id', Integer, primary_key=True, index=True),
+            Column('tweet_id', BigInteger, unique=True),
             Column('user_id', Integer, index=True),
             Column('text', Text),
             Column('retweet', Boolean),

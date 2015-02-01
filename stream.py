@@ -35,7 +35,7 @@ neutral_count  = 0
 polarity_total = 0
 polarity_average = 0
 total = 0
-def get_sentiment(created_at, username, user_id, favorited, favorite_count, retweeted, retweet_count, followers, following, text):
+def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_count, retweeted, retweet_count, followers, following, text):
     global count
     global positive_count
     global negative_count
@@ -82,20 +82,20 @@ def get_sentiment(created_at, username, user_id, favorited, favorite_count, retw
     #http://stackoverflow.com/questions/5729500/how-does-sqlalchemy-handle-unique-constraint-in-table-definition
     timestamp = time.time()
     timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
-    user = session.query(User).filter((user_id==user_id )|(username==username)).first()
+    user = session.query(User).filter_by(user_id=user_id).first()
     if user:
         # insert the new data in db
-        tweet_data = Tweet( user_id=user.id, text=text, retweet=retweeted, retweet_count=retweet_count, timestamp=timestamp, sentiment=polarity )
+        tweet_data = Tweet( tweet_id = tweet_id, user_id=user.id, text=text, retweet=retweeted, retweet_count=retweet_count, timestamp=timestamp, sentiment=polarity )
         session.add(tweet_data)
         session.commit()
         #timestamp_existing = session.query(Tweets).filter_by(timestamp=timestamp).one()
         print(username)
     else:
-        user_data = User( user_id==user_id, username==username, followers=followers, following=following)
+        user_data = User( user_id=user_id, username=username, followers=followers, following=following)
         session.add(user_data)
         session.commit()
-        user = session.query(User).filter((user_id==user_id)|(username==username)).first()
-        tweet_data = Tweet( user_id=user.id, text=text, retweet=retweeted, retweet_count=retweet_count,timestamp=timestamp, sentiment=polarity )
+        user = session.query(User).filter_by(user_id=user_id).first()
+        tweet_data = Tweet( tweet_id=tweet_id, user_id=user.id, text=text, retweet=retweeted, retweet_count=retweet_count,timestamp=timestamp, sentiment=polarity )
         session.add(tweet_data)
         session.commit()
         return
@@ -107,6 +107,7 @@ def process_data(data):
     #output formatted json to the console
     #print( json.dumps( tweet, sort_keys=True, indent=4, separators=(',', ': ') ) )
 
+    tweet_id = tweet['id']
     username = tweet['user']['screen_name']
     followers = tweet['user']['followers_count']
     following = tweet['user']['friends_count']
@@ -118,7 +119,7 @@ def process_data(data):
     user_id = tweet['user']['id']
     text = tweet['text']
 
-    get_sentiment(created_at, username, user_id, favorited, favorite_count, retweeted, retweet_count, followers, following, text)
+    get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_count, retweeted, retweet_count, followers, following, text)
 
 
 class listener(StreamListener):

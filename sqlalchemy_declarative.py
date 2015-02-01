@@ -21,6 +21,7 @@ class Tweet(Base):
     __tablename__ = 'tweets'
 
     id = Column(Integer, primary_key=True, index=True)
+    tweet_id = Column(BigInteger, unique=True)
     user_id = Column(Integer, index=True)
     text = Column(Text)
     retweet = Column(Boolean)
