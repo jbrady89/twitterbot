@@ -2,19 +2,6 @@ import datetime
 from sqlalchemy import create_engine
 from sqlalchemy import MetaData, Column, Table
 from sqlalchemy import Integer, DateTime, Boolean, Text, Float, BigInteger
-<<<<<<< HEAD
-
-#create new db
-#http://stackoverflow.com/questions/6506578/how-to-create-a-new-database-using-sqlalchemy
-engine = create_engine('postgres://postgres:postgres@localhost:5432')
-conn = engine.connect()
-conn.execute("commit")
-conn.execute("create database twitterbot")
-conn.close()
-
-#open connection to new db and create the tables
-engine = create_engine('postgres://postgres:postgres@localhost:5432/twitterbot', echo=True)
-=======
 
 username = "postgres"
 password = "password"
@@ -31,7 +18,6 @@ conn.close()
 
 #open connection to new db and create the tables
 engine = create_engine("postgresql+psycopg2://{}:{}@localhost:{}/{}".format(username, password, port, db), echo=True)
->>>>>>> 977d8880ee9c01cc13bc794c1cbdc7c704068c96
 
 metadata=MetaData(bind=engine)
 
