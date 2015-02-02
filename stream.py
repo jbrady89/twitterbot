@@ -8,6 +8,9 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy_declarative import Tweet, User, Price
 from textblob import TextBlob
 
+# check your credentials
+print("check your credentials")
+
 consumer_key = "rY3Q4lLIAcLRXPm66JoU2jL8X"
 consumer_secret = "xkTrpkamaiDQaiAdEvcvJLj6hmaLH0DL2m5bE4l4H7ROFuRKBC"
 access_token = "928665026-VghhFE4Xxovwv1Sz7Ivizdm6bGjEQn2yFGgd5TIy"
