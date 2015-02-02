@@ -86,23 +86,25 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
     timestamp = time.time()
     timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
     user = session.query(User).filter_by(user_id=user_id).first()
+    tweet = session.query(Tweet).filter_by(tweet_id=tweet_id).first()
     if user:
-        # insert the new data in db
-        tweet_data = Tweet( tweet_id = tweet_id, user_id=user.id, text=text, retweet=retweeted, retweet_count=retweet_count, timestamp=timestamp, sentiment=polarity )
-        session.add(tweet_data)
-        session.commit()
-        #timestamp_existing = session.query(Tweets).filter_by(timestamp=timestamp).one()
-        print(username)
+        if tweet:
+            print(username)
+        else:
+            tweet_data = Tweet( tweet_id = tweet_id, user_id=user.id, text=text, retweet=retweeted, retweet_count=retweet_count, timestamp=timestamp, sentiment=polarity )
+            session.add(tweet_data)
+            session.commit()
     else:
-        user_data = User( user_id=user_id, username=username, followers=followers, following=following)
-        session.add(user_data)
-        session.commit()
-        user = session.query(User).filter_by(user_id=user_id).first()
-        tweet_data = Tweet( tweet_id=tweet_id, user_id=user.id, text=text, retweet=retweeted, retweet_count=retweet_count,timestamp=timestamp, sentiment=polarity )
-        session.add(tweet_data)
-        session.commit()
-        return
-        #print("name exists: {}, time exists: {} \n \n".format(name_existing, timestamp_existing))
+        if tweet:
+            print(username)
+        else:
+            user_data = User( user_id=user_id, username=username, followers=followers, following=following)
+            session.add(user_data)
+            session.commit()
+            user = session.query(User).filter_by(user_id=user_id).first()
+            tweet_data = Tweet( tweet_id=tweet_id, user_id=user.id, text=text, retweet=retweeted, retweet_count=retweet_count,timestamp=timestamp, sentiment=polarity )
+            session.add(tweet_data)
+            session.commit()
 
 def process_data(data):
     tweet = json.loads(data)
