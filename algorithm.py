@@ -7,9 +7,20 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy_declarative import Price, Tweet, User
 from textblob import TextBlob
 
+<<<<<<< HEAD
 print ( "Connecting to database\n" )
 
 engine = create_engine("postgresql+psycopg2://postgres:postgres@localhost:5432/twitterbot")
+=======
+username = "postgres"
+password = "postgres"
+port = "5432"
+db = "twitterbot"
+
+print ( "Connecting to database\n")
+
+engine = create_engine("postgresql+psycopg2://{}:{}@localhost:{}/{}".format(username, password, port, db))
+>>>>>>> 977d8880ee9c01cc13bc794c1cbdc7c704068c96
 
 print ( "Connected!\n" )
 
