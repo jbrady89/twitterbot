@@ -4,13 +4,13 @@ from sqlalchemy import MetaData, Column, Table
 from sqlalchemy import Integer, DateTime, Boolean, Text, Float, BigInteger
 
 username = "postgres"
-password = "password"
-port = "5433"
+password = "postgres"
+port = "5432"
 db = "twitterbot"
 
 #create new db
 #http://stackoverflow.com/questions/6506578/how-to-create-a-new-database-using-sqlalchemy
-engine = create_engine("postgresql+psycopg2://{}:{}@localhost:{}".format(username, password, port, db))
+engine = create_engine("postgresql+psycopg2://{}:{}@localhost:{}".format(username, password, port))
 conn = engine.connect()
 conn.execute("commit")
 conn.execute("create database {}".format(db))

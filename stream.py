@@ -11,14 +11,14 @@ from textblob import TextBlob
 # check your credentials
 print("check your credentials")
 
-consumer_key = "rY3Q4lLIAcLRXPm66JoU2jL8X"
-consumer_secret = "xkTrpkamaiDQaiAdEvcvJLj6hmaLH0DL2m5bE4l4H7ROFuRKBC"
-access_token = "928665026-VghhFE4Xxovwv1Sz7Ivizdm6bGjEQn2yFGgd5TIy"
-access_token_secret = "xtdeTR1eEkSwlhPwj02OLle64kPFvBUYgfx9FsuaozZdI"
+consumer_key = "TylYDYasSIRJ9RIo12Ir4oV8r"
+consumer_secret = "zKKxkRVMkgdnF3VPkvEc8RzzQt9EjdpTLOPs5XO2CGIZuruW4m"
+access_token = "105344276-MKAKZytLqQ3Y53AxV0ji6hyhsLA3dFig7ce5FKC2"
+access_token_secret = "HZLAI3XrWSvhBKHouXB1jSuoEsCT7N6NhAaOywarOQDJG"
 
 username = "postgres"
-password = "password"
-port = "5433"
+password = "postgres"
+port = "5432"
 db = "twitterbot"
 
 print ( "Connecting to database\n")
@@ -86,23 +86,25 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
     timestamp = time.time()
     timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
     user = session.query(User).filter_by(user_id=user_id).first()
+    tweet = session.query(Tweet).filter_by(tweet_id=tweet_id).first()
     if user:
-        # insert the new data in db
-        tweet_data = Tweet( tweet_id = tweet_id, user_id=user.id, text=text, retweet=retweeted, retweet_count=retweet_count, timestamp=timestamp, sentiment=polarity )
-        session.add(tweet_data)
-        session.commit()
-        #timestamp_existing = session.query(Tweets).filter_by(timestamp=timestamp).one()
-        print(username)
+        if tweet:
+            print(username)
+        else:
+            tweet_data = Tweet( tweet_id = tweet_id, user_id=user.id, text=text, retweet=retweeted, retweet_count=retweet_count, timestamp=timestamp, sentiment=polarity )
+            session.add(tweet_data)
+            session.commit()
     else:
-        user_data = User( user_id=user_id, username=username, followers=followers, following=following)
-        session.add(user_data)
-        session.commit()
-        user = session.query(User).filter_by(user_id=user_id).first()
-        tweet_data = Tweet( tweet_id=tweet_id, user_id=user.id, text=text, retweet=retweeted, retweet_count=retweet_count,timestamp=timestamp, sentiment=polarity )
-        session.add(tweet_data)
-        session.commit()
-        return
-        #print("name exists: {}, time exists: {} \n \n".format(name_existing, timestamp_existing))
+        if tweet:
+            print(username)
+        else:
+            user_data = User( user_id=user_id, username=username, followers=followers, following=following)
+            session.add(user_data)
+            session.commit()
+            user = session.query(User).filter_by(user_id=user_id).first()
+            tweet_data = Tweet( tweet_id=tweet_id, user_id=user.id, text=text, retweet=retweeted, retweet_count=retweet_count,timestamp=timestamp, sentiment=polarity )
+            session.add(tweet_data)
+            session.commit()
 
 def process_data(data):
     tweet = json.loads(data)
