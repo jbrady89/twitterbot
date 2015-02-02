@@ -85,7 +85,7 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
     #http://stackoverflow.com/questions/5729500/how-does-sqlalchemy-handle-unique-constraint-in-table-definition
     timestamp = time.time()
     timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
-    user = session.query(User).filter_by(user_id=user_id).first()
+    user = session.query(User).filter(or_(User.user_id==user_id, User.username==username)).first()
     tweet = session.query(Tweet).filter_by(tweet_id=tweet_id).first()
     if user:
         if tweet:
@@ -101,7 +101,7 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
             user_data = User( user_id=user_id, username=username, followers=followers, following=following)
             session.add(user_data)
             session.commit()
-            user = session.query(User).filter_by(user_id=user_id).first()
+            user = session.query(User).filter(or_(User.user_id==user_id, User.username==username)).first()
             tweet_data = Tweet( tweet_id=tweet_id, user_id=user.id, text=text, retweet=retweeted, retweet_count=retweet_count,timestamp=timestamp, sentiment=polarity )
             session.add(tweet_data)
             session.commit()
