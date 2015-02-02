@@ -29,7 +29,7 @@ prices_table=Table('prices',metadata,
 
 tweets_table=Table('tweets',metadata,
             Column('id', Integer, primary_key=True, index=True),
-            Column('tweet_id', BigInteger, unique=True),
+            Column('tweet_id', BigInteger, index=True, unique=True),
             Column('user_id', Integer, index=True),
             Column('text', Text),
             Column('retweet', Boolean),
@@ -40,8 +40,8 @@ tweets_table=Table('tweets',metadata,
 
 users_table=Table('users',metadata,
             Column('id', Integer, primary_key=True, index=True),
-            Column('user_id', BigInteger, unique=True),
-            Column('username', Text, unique=True),
+            Column('user_id', BigInteger, index=True, unique=True),
+            Column('username', Text, index=True, unique=True),
             Column('followers', Integer),
             Column('following', Integer)
             )
