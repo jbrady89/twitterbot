@@ -11,14 +11,14 @@ from textblob import TextBlob
 # check your credentials
 print("check your credentials")
 
-consumer_key = "rY3Q4lLIAcLRXPm66JoU2jL8X"
-consumer_secret = "xkTrpkamaiDQaiAdEvcvJLj6hmaLH0DL2m5bE4l4H7ROFuRKBC"
-access_token = "928665026-VghhFE4Xxovwv1Sz7Ivizdm6bGjEQn2yFGgd5TIy"
-access_token_secret = "xtdeTR1eEkSwlhPwj02OLle64kPFvBUYgfx9FsuaozZdI"
+consumer_key = "TylYDYasSIRJ9RIo12Ir4oV8r"
+consumer_secret = "zKKxkRVMkgdnF3VPkvEc8RzzQt9EjdpTLOPs5XO2CGIZuruW4m"
+access_token = "105344276-MKAKZytLqQ3Y53AxV0ji6hyhsLA3dFig7ce5FKC2"
+access_token_secret = "HZLAI3XrWSvhBKHouXB1jSuoEsCT7N6NhAaOywarOQDJG"
 
 username = "postgres"
-password = "password"
-port = "5433"
+password = "postgres"
+port = "5432"
 db = "twitterbot"
 
 print ( "Connecting to database\n")
