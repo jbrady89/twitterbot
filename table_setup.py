@@ -4,8 +4,8 @@ from sqlalchemy import MetaData, Column, Table
 from sqlalchemy import Integer, DateTime, Boolean, Text, Float, BigInteger
 
 username = "postgres"
-password = "postgres"
-port = "5432"
+password = "password"
+port = "5433"
 db = "twitterbot"
 
 #create new db
