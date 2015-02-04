@@ -4,7 +4,7 @@ from sqlalchemy import create_engine, Column, Integer, Float, Text, Boolean
 from sqlalchemy import DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy_declarative import Price
+from sqlalchemy_declarative import Price, Tweet
 from textblob import TextBlob
 
 username = "postgres"
@@ -22,7 +22,7 @@ Base = declarative_base()
 Session = sessionmaker(bind=engine)
 session = Session()
 
-next_call = time.time()
+#next_call = time.time()
 last_price = None
 
 #gets minute data for up to the last 15 days
@@ -53,15 +53,6 @@ def get_historic_data(symbol):
 def get_stock_data():
     global last_price
     response = requests.get("http://finance.yahoo.com/webservice/v1/symbols/AAPL/quote?format=json")
-
-    bloomberg = requests.get("http://www.bloomberg.com/markets/chart/data/1D/AAPL:US")
-    bloomberg_prices = bloomberg["data_values"]
-    for price in bloomberg_prices:
-        timestamp = price[0]
-        timestamp = datetime.datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d %H:%M:%S")
-        close = price[1]
-        print("Time: {}, Close: {}".format(timestamp, close))
-
     json_data = response.json()
 
     utctime = json_data['list']['resources'][0]['resource']['fields']['utctime']
@@ -69,9 +60,9 @@ def get_stock_data():
     timestamp = time.time()
     timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
 
-    price = session.query(Price).filter_by(timestamp=timestamp).first()
-    if price:
-        print("a record exists with the time value: {} \n".format(price))
+    time_exists = session.query(Price).filter_by(timestamp=timestamp).first()
+    if time_exists:
+        print("a record exists with the time value: {} \n".format(time_exists))
     else:
         #insert data
         price = Price(close=close, timestamp=timestamp)
@@ -80,13 +71,13 @@ def get_stock_data():
         print("Close: {}, Timestamp: {} \n".format(close, timestamp))
 
 def get_quote():
-    global next_call 
+    global next_call
     #the current time
-    print ( datetime.datetime.now() )
+    print ( time.time() ) 
     get_stock_data() #get the current price
-    next_call = next_call+60 #schedule the next call for 1 minute in the future
+    next_call = time.time() + 1.00 #schedule the next call for 1 minute in the future
     #this sets up the 1 minute interval running in the background
-    price_timer = threading.Timer( next_call - time.time() , get_quote )
+    price_timer = threading.Timer( next_call - time.time(), get_quote )
     price_timer.start()
 
 def get_bloomberg_data(symbol):
@@ -100,6 +91,19 @@ def get_bloomberg_data(symbol):
         close = price[1]
         print("Time: {}, Close: {}".format(timestamp, close))
 
-get_bloomberg_data("AAPL")
+#get_bloomberg_data("AAPL")
+
+def get_data_from_period(period):
+    #to get all prices since a certain time 
+    #this returns all rows with a timestamp after or equal to the specified
+    period = session.query(Price).filter(Price.timestamp >= period)
+    period = period.all()
+    for data in period: 
+        print(data.close)
+        print(data.timestamp)
+
+
 #get_historic_data("AAPL")
+get_data_from_period('2015-2-3 15:00:0')
+#next_call = time.time()
 #get_quote()
