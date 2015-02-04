@@ -8,19 +8,13 @@ from sqlalchemy_declarative import Price
 from textblob import TextBlob
 
 username = "postgres"
-password = "postgres"
-port = "5432"
+password = "password"
+port = "5433"
 db = "twitterbot"
 
 print ( "Connecting to database\n")
 
-<<<<<<< HEAD
-print ( "Connecting to database\n" )
-
-engine = create_engine("postgresql+psycopg2://postgres:postgres@localhost:5432/twitterbot")
-=======
 engine = create_engine("postgresql+psycopg2://{}:{}@localhost:{}/{}".format(username, password, port, db))
->>>>>>> 977d8880ee9c01cc13bc794c1cbdc7c704068c96
 
 print ( "Connected!\n" )
 
@@ -59,6 +53,15 @@ def get_historic_data(symbol):
 def get_stock_data():
     global last_price
     response = requests.get("http://finance.yahoo.com/webservice/v1/symbols/AAPL/quote?format=json")
+
+    bloomberg = requests.get("http://www.bloomberg.com/markets/chart/data/1D/AAPL:US")
+    bloomberg_prices = bloomberg["data_values"]
+    for price in bloomberg_prices:
+        timestamp = price[0]
+        timestamp = datetime.datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d %H:%M:%S")
+        close = price[1]
+        print("Time: {}, Close: {}".format(timestamp, close))
+
     json_data = response.json()
 
     utctime = json_data['list']['resources'][0]['resource']['fields']['utctime']
@@ -86,5 +89,17 @@ def get_quote():
     price_timer = threading.Timer( next_call - time.time() , get_quote )
     price_timer.start()
 
-get_historic_data("AAPL")
+def get_bloomberg_data(symbol):
+
+    response = requests.get("http://www.bloomberg.com/markets/chart/data/1D/{}:US".format(symbol))
+    json_response = response.json()
+    bloomberg_data = json_response["data_values"]
+    for price in bloomberg_data:
+        thetime = price[0] / 1000
+        timestamp = datetime.datetime.fromtimestamp(thetime).strftime('%Y-%m-%d %H:%M:%S:%f')        
+        close = price[1]
+        print("Time: {}, Close: {}".format(timestamp, close))
+
+get_bloomberg_data("AAPL")
+#get_historic_data("AAPL")
 #get_quote()
