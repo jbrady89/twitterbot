@@ -15,7 +15,7 @@ class Price(Base):
     timestamp = Column(DateTime, default=datetime.datetime.now(), index=True, unique=True)
 
     def __repr__(self):
-        return "<User(close='%s')>" % (self.close)
+        return "<User(close='%s', timestamp='%s')>" % (self.close, self.timestamp)
 
 class Tweet(Base):
     __tablename__ = 'tweets'
