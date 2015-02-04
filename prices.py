@@ -22,7 +22,7 @@ Base = declarative_base()
 Session = sessionmaker(bind=engine)
 session = Session()
 
-#next_call = time.time()
+next_call = time.time()
 last_price = None
 
 #gets minute data for up to the last 15 days
@@ -36,10 +36,6 @@ def get_historic_data(symbol):
     for entry in price_data['series'][:-1]:
         close = entry["close"]
         timestamp = entry["Timestamp"]
-        #format the timestamp to round seconds to the nearest minute
-        #minutes = (timestamp / 60)
-        #minutes = round(minutes)
-        #timestamp = minutes * 60
         timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
         price = session.query(Price).filter_by(timestamp=timestamp).first()
         if price: 
@@ -55,7 +51,6 @@ def get_stock_data():
     response = requests.get("http://finance.yahoo.com/webservice/v1/symbols/AAPL/quote?format=json")
     json_data = response.json()
 
-    utctime = json_data['list']['resources'][0]['resource']['fields']['utctime']
     close = json_data['list']['resources'][0]['resource']['fields']['price']
     timestamp = time.time()
     timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
@@ -75,7 +70,7 @@ def get_quote():
     #the current time
     print ( time.time() ) 
     get_stock_data() #get the current price
-    next_call = time.time() + 1.00 #schedule the next call for 1 minute in the future
+    next_call = next_call + 1.00 #schedule the next call for 1 minute in the future
     #this sets up the 1 minute interval running in the background
     price_timer = threading.Timer( next_call - time.time(), get_quote )
     price_timer.start()
@@ -91,8 +86,6 @@ def get_bloomberg_data(symbol):
         close = price[1]
         print("Time: {}, Close: {}".format(timestamp, close))
 
-#get_bloomberg_data("AAPL")
-
 def get_data_from_period(period):
     #to get all prices since a certain time 
     #this returns all rows with a timestamp after or equal to the specified
@@ -105,5 +98,6 @@ def get_data_from_period(period):
 
 #get_historic_data("AAPL")
 get_data_from_period('2015-2-3 15:00:0')
+#get_bloomberg_data("AAPL")
 #next_call = time.time()
 #get_quote()
