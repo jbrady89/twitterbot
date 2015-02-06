@@ -1,17 +1,11 @@
-
-import datetime, threading, time, json, requests, langid, sys, traceback
-from tweepy import Stream, OAuthHandler, StreamListener
-from sqlalchemy import create_engine, Column, Integer, Float, Text, Boolean
-from sqlalchemy import DateTime
-from sqlalchemy import or_
+import matplotlib
+import numpy as np
+from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy_declarative import Tweet, User, Price
-from textblob import TextBlob
+from sqlalchemy_declarative import Price, Tweet
 from itertools import islice
-import matplotlib
 from matplotlib import pyplot as plt
-import numpy as np
 
 username = "postgres"
 password = "password"
@@ -45,9 +39,10 @@ def moving_averages(values, size):
 
 sentiments = []
 sentiment_MAs = []
-tweets = session.query(Tweet).all()
 
-print("processing tweet sentiment...\n")
+print("processing tweet sentiments...\n")
+
+tweets = session.query(Tweet).all()
 
 for tweet in tweets:
 	sentiments.append(tweet.sentiment)
