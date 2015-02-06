@@ -38,7 +38,7 @@ def get_historic_data(symbol):
         timestamp = entry["Timestamp"]
         timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
         price = session.query(Price).filter_by(timestamp=timestamp).first()
-        if price: 
+        if price:
             print("a record exists with the time value: {} \n".format(time))
         else:
             price = Price(close=close, timestamp=timestamp)
@@ -68,7 +68,7 @@ def get_stock_data():
 def get_quote():
     global next_call
     #the current time
-    print ( time.time() ) 
+    print ( time.time() )
     get_stock_data() #get the current price
     next_call = next_call + 1.00 #schedule the next call for 1 minute in the future
     #this sets up the 1 minute interval running in the background
@@ -82,22 +82,22 @@ def get_bloomberg_data(symbol):
     bloomberg_data = json_response["data_values"]
     for price in bloomberg_data:
         thetime = price[0] / 1000
-        timestamp = datetime.datetime.fromtimestamp(thetime).strftime('%Y-%m-%d %H:%M:%S:%f')        
+        timestamp = datetime.datetime.fromtimestamp(thetime).strftime('%Y-%m-%d %H:%M:%S:%f')
         close = price[1]
         print("Time: {}, Close: {}".format(timestamp, close))
 
 def get_data_from_period(period):
-    #to get all prices since a certain time 
+    #to get all prices since a certain time
     #this returns all rows with a timestamp after or equal to the specified
     period = session.query(Price).filter(Price.timestamp >= period)
     period = period.all()
-    for data in period: 
+    for data in period:
         print(data.close)
         print(data.timestamp)
 
 
 #get_historic_data("AAPL")
-get_data_from_period('2015-2-3 15:00:0')
+#get_data_from_period('2015-2-3 15:00:0')
 #get_bloomberg_data("AAPL")
 #next_call = time.time()
-#get_quote()
+get_quote()
