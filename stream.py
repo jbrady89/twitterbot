@@ -40,6 +40,16 @@ neutral_count  = 0
 polarity_total = 0
 polarity_average = 0
 total = 0
+
+def isTimeFormat(input):
+    try:
+        time.strptime(input, '%a %b %d %H:%M:%S +0000 %Y')
+        print("true")
+        return True
+    except ValueError:
+        print("false")
+        return False
+
 def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_count, retweeted, retweet_count, followers, following, text):
     global count
     global positive_count
@@ -81,17 +91,27 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
         print("Neutral: {} \n".format(neutral_count))
 
     else:
-        print("the tweet is not in english")
+        #print("the tweet is not in english")
         return
 
     #http://stackoverflow.com/questions/5729500/how-does-sqlalchemy-handle-unique-constraint-in-table-definition
-    # convert twitter timestamp into seconds subtract 5 hours and then reformat it
     # in order to get EST
-    print(created_at)
-    #formatted_date = created_at.strftime('%Y-%m-%d %H:%M:%S', created_at.strptime(created_at,'%a %b %d %H:%M:%S +0000 %Y'))
-    timestamp = created_at.timestamp()
-    timestamp = int(timestamp) - 18000
-    timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+    #print("90: " , created_at)
+    #check the format and adjust accordingly
+    #search method and stream method give different values for "created_at"
+    if isTimeFormat(created_at):
+
+        formatted_date = time.strftime('%Y-%m-%d %H:%M:%S', time.strptime(created_at,'%a %b %d %H:%M:%S +0000 %Y'))
+        #http://stackoverflow.com/questions/9637838/convert-string-date-to-timestamp-in-python
+        date_in_seconds = time.mktime(datetime.datetime.strptime(formatted_date, "%Y-%m-%d %H:%M:%S").timetuple())
+        # subtract 5 hours from UTC to get EST
+        adjusted_time = int(date_in_seconds) - 18000
+        timestamp = datetime.datetime.fromtimestamp(adjusted_time).strftime('%Y-%m-%d %H:%M:%S')
+
+    else:
+        #print(formatted_date)
+        timestamp = created_at
+
     user = session.query(User).filter_by(user_id=user_id).first()
     tweet = session.query(Tweet).filter_by(tweet_id=tweet_id).first()
     if user:
@@ -120,7 +140,7 @@ def process_data(data):
     #print( json.dumps( tweet, sort_keys=True, indent=4, separators=(',', ': ') ) )
     try:
         #tweet = json.loads(data)
-        print(tweet['id'])
+        #print(tweet['id'])
         tweet_id = tweet['id']
         username = tweet['user']['screen_name']
         followers = tweet['user']['followers_count']
@@ -132,7 +152,7 @@ def process_data(data):
         created_at = tweet['created_at']
         user_id = tweet['user']['id']
         text = tweet['text']
-        print(created_at)
+        #print("136: " , created_at)
         get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_count, retweeted, retweet_count, followers, following, text)
 
     except:
@@ -140,7 +160,7 @@ def process_data(data):
         print("something went wrong")
         print(traceback.format_exc())
         print(data)
-        time.sleep(10)
+        #time.sleep(10)
 
         #get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_count, retweeted, retweet_count, followers, following, text)
 
@@ -152,7 +172,7 @@ def fill_in_missing():
     MAX_ATTEMPTS                    =   10000
     COUNT_OF_TWEETS_TO_BE_FETCHED   =   50000
     count = 0
-    for i in range(0, 1):
+    for i in range(0, MAX_ATTEMPTS):
 
         if(COUNT_OF_TWEETS_TO_BE_FETCHED < len(old_tweets)):
             break # we reached our goal
@@ -173,7 +193,7 @@ def fill_in_missing():
 
             try:
 
-                results = api.search(q="apple", lang="en", count='20', since_id= last_tweet_id )
+                results = api.search(q="apple", lang="en", count='100', since_id= last_tweet_id )
                 #to see the structure of a single status uncomment this
                 #print(results[0])
 
@@ -231,7 +251,7 @@ def fill_in_missing():
                                 "favorite_count": favorite_count
                             },
                             # need to format this
-                            "created_at": created_at
+                            "created_at": timestamp
 
                         }
 
@@ -240,14 +260,12 @@ def fill_in_missing():
             print(result["created_at"])
             print(len(old_tweets))
 
-        old_tweets = old_tweets[::-1]
-        process_old_tweets(old_tweets)
+        #old_tweets = old_tweets[::-1]
+        #process_old_tweets(old_tweets)
         # STEP 3: Get the next max_id
         try:
             # Parse the data returned to get max_id to be passed in next call.
             next_max_id = results[-1].id
-            if next_max_id == last_tweet_id:
-                print("we've reached the end")
 
             created_at = results[-1].created_at
 
@@ -259,7 +277,7 @@ def fill_in_missing():
 
             #reverse the old_tweet array so the oldest one can be inserted into the db first
             old_tweets = old_tweets[::-1]
-            #process_old_tweets(old_tweets)
+            process_old_tweets(old_tweets)
             #iterate through old tweets and pass the data to the sentiment function
             break
 
@@ -287,38 +305,39 @@ class listener(StreamListener):
         process_data(data)
 
     def on_error(self, status):
-        print( status.text )
+        print( status )
 
 fill_in_missing()
 
-'''
+
 auth = OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 twitterStream = Stream(auth, listener())
-while True:  #Endless loop: personalize to suit your own purposes
-    try:
-        twitterStream.filter(track=[
-                                    "apple",
-                                    "aapl",
-                                    "imac",
-                                    "ios",
-                                    "ipad",
-                                    "iphone",
-                                    "ipod",
-                                    "iwatch",
-                                    "mac",
-                                    "os x",
-                                    "osx",
-                                    "tim cook"
-                                    ], languages=["en"]
-                                )
+#start_stream(twitterStream)
+def start_stream(twitterStream):
+    while True:  #Endless loop: personalize to suit your own purposes
+        try:
+            twitterStream.filter(track=[
+                                        "apple",
+                                        "aapl",
+                                        "imac",
+                                        "ios",
+                                        "ipad",
+                                        "iphone",
+                                        "ipod",
+                                        "iwatch",
+                                        "mac",
+                                        "os x",
+                                        "osx",
+                                        "tim cook"
+                                        ], languages=["en"]
+                                    )
 
-    except:
-        #e = sys.exc_info()[0]  #Get exception info (optional)
-        #print ('ERROR:',e ) #Print exception info (optional)
-        print(traceback.format_exc())
-        print("sleeping")
-        time.sleep(1)
-        twitterStream = Stream(auth, listener())
-        continue
-'''
+        except:
+            #e = sys.exc_info()[0]  #Get exception info (optional)
+            #print ('ERROR:',e ) #Print exception info (optional)
+            print(traceback.format_exc())
+            print("sleeping")
+            #time.sleep(1)
+            twitterStream = Stream(auth, listener())
+            continue
