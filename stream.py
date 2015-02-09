@@ -1,4 +1,5 @@
 import datetime, threading, time, json, requests, langid, sys, traceback
+import tweepy
 from tweepy import Stream, OAuthHandler, StreamListener
 from sqlalchemy import create_engine, Column, Integer, Float, Text, Boolean
 from sqlalchemy import DateTime
@@ -7,6 +8,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_declarative import Tweet, User, Price
 from textblob import TextBlob
+
 
 username = "postgres"
 password = "password"
@@ -27,6 +29,9 @@ consumer_key = "rY3Q4lLIAcLRXPm66JoU2jL8X"
 consumer_secret = "xkTrpkamaiDQaiAdEvcvJLj6hmaLH0DL2m5bE4l4H7ROFuRKBC"
 access_token = "928665026-VghhFE4Xxovwv1Sz7Ivizdm6bGjEQn2yFGgd5TIy"
 access_token_secret = "xtdeTR1eEkSwlhPwj02OLle64kPFvBUYgfx9FsuaozZdI"
+auth = OAuthHandler(consumer_key, consumer_secret)
+auth.set_access_token(access_token, access_token_secret)
+api = tweepy.API(auth)
 
 count = 0
 positive_count = 0
@@ -123,22 +128,18 @@ def process_data(data):
 
     get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_count, retweeted, retweet_count, followers, following, text)
 
-# call this to fill in missing tweets if program goes offline
-auth = OAuthHandler(consumer_key, consumer_secret)
-auth.set_access_token(access_token, access_token_secret)
-import tweepy
-api = tweepy.API(auth)
-old_tweets = []
+# call this to fill in missing tweets if program goes stalls/goes offline
+
 def fill_in_missing():
-    tweets                          =   []
+    old_tweets                      =   []
     last_ids                        =   []
     MAX_ATTEMPTS                    =   10000
     COUNT_OF_TWEETS_TO_BE_FETCHED   =   50000
     count = 0
-    for i in range(0,1):
+    for i in range(0, MAX_ATTEMPTS):
 
-        if(COUNT_OF_TWEETS_TO_BE_FETCHED < len(tweets)):
-            break # we got 500 tweets... !!
+        if(COUNT_OF_TWEETS_TO_BE_FETCHED < len(old_tweets)):
+            break # we reached our goal
 
         #----------------------------------------------------------------#
         # STEP 1: Query Twitter
@@ -148,16 +149,17 @@ def fill_in_missing():
 
         # STEP 1: Query Twitter
         if(0 == i):
-            # Query twitter for data.
+            # get the last tweet_id from Tweet table
+
             last_tweet = session.query(Tweet).order_by(Tweet.id.desc()).first()
             last_tweet_id = last_tweet.tweet_id
-            print(last_tweet_id)
+            print("last tweet_id", last_tweet_id, "\n")
 
             try:
 
-                results = api.search(q="apple", lang="en", count='2', since_id= last_tweet_id )
+                results = api.search(q="apple", lang="en", count='100', since_id= last_tweet_id )
+                #to see the structure of a single status uncomment this
                 #print(results[0])
-                #results = results[::-1]
 
             except:
                 # rate limit exceeded
@@ -171,8 +173,6 @@ def fill_in_missing():
             # After the first call we should have max_id from result of previous call. Pass it in query.
             try:
                 results = api.search(q="apple", lang="en", count='100', since_id=last_tweet_id , max_id=next_max_id)
-                #print("else \n\n\n")
-                tweets.append(results.reverse())
             except:
                 # rate limit exceeded
                 print("fook")
@@ -182,20 +182,20 @@ def fill_in_missing():
         # STEP 2: Save the returned tweets
 
         for result in results:
-            #print(result.id, "\n")
-            #print(result)
-            text = result.text
-            tweet_id = result.id
-            author = result.author
-            user_id = author.id
-            username = author.screen_name
-            following = author.friends_count
-            followers = author.followers_count
-            retweeted = result.retweeted
-            retweet_count = result.retweet_count
-            favorited = result.favorited
+
+
+            text           = result.text
+            tweet_id       = result.id
+            author         = result.author
+            user_id        = author.id
+            username       = author.screen_name
+            following      = author.friends_count
+            followers      = author.followers_count
+            retweeted      = result.retweeted
+            retweet_count  = result.retweet_count
+            favorited      = result.favorited
             favorite_count = result.favorite_count
-            created_at = result.created_at
+            created_at     = result.created_at
 
             result  =   {
 
@@ -211,52 +211,33 @@ def fill_in_missing():
                                 "favorited": favorited,
                                 "favorite_count": favorite_count
                             },
-                            "created_at": int(created_at.strftime("%S"))
+                            # need to format this
+                            "created_at": created_at
 
                         }
 
             old_tweets.append(result)
-            print(old_tweets)
+
+            print(result["created_at"])
             print(len(old_tweets))
-
-            #tweet_data = { tweet_id}
-            #result.username
-
-            #print(result.text, "\n", result.id, result.created_at, author.id , author.screen_name, "\n")
-            '''
-            tweet_text = result['text']
-            followers = result['user']['followers_count']
-            favs = result['favorite_count']
-            rts = result['retweet_count']
-            created_at = result['created_at']
-            #for key in result.keys(): print( key )
-            #print(result['user'], '\n')
-            #print(json.dumps(result, sort_keys=True, indent=4, separators=(',', ': ') ) )
-            #print("text: {}, followers: {}, rts: {}, favs: {}".format(tweet_text, followers, rts, favs) )
-            count += 1
-            tweets.append(tweet_text)
-            print("count: ", len(tweets), "\n", "created at: ", created_at)
-
-            #print("\n", count)'''
 
 
 
         # STEP 3: Get the next max_id
         try:
-            # Parse the data returned to get max_id to be passed in consequent call.
-            #print(results)
+            # Parse the data returned to get max_id to be passed in next call.
             next_max_id = results[-1].id
             created_at = results[-1].created_at
+
+            #track ids to make sure they are different
             last_ids.append(next_max_id)
-            #print(created_at)
-            #print(last_ids)
-            #next_results_url_params    = results['search_metadata']['next_results']
-            #print(next_results_url_params)
-            #next_max_id        = next_results_url_params.split('max_id=')[1].split('&')[0]
         except:
             # No more next pages
             print("no more pages")
-            #reverse the array so the newest one is last before starting to insert into the db
+
+            #reverse the old_tweet array so the oldest one can be inserted into the db first
+            old_tweets = old_tweets[::-1]
+            #pass iterate through old tweets and pass the data to the sentiment function
             break
 
 
