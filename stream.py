@@ -81,11 +81,14 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
         print("Neutral: {} \n".format(neutral_count))
 
     else:
-        #print("the tweet is not in english")
+        print("the tweet is not in english")
         return
 
     #http://stackoverflow.com/questions/5729500/how-does-sqlalchemy-handle-unique-constraint-in-table-definition
-    timestamp = time.time()
+    # convert twitter timestamp into seconds subtract 5 hours and then reformat it
+    # in order to get EST
+    timestamp = created_at.timestamp()
+    timestamp = int(timestamp) - 18000
     timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
     user = session.query(User).filter_by(user_id=user_id).first()
     tweet = session.query(Tweet).filter_by(tweet_id=tweet_id).first()
@@ -136,7 +139,7 @@ def fill_in_missing():
     MAX_ATTEMPTS                    =   10000
     COUNT_OF_TWEETS_TO_BE_FETCHED   =   50000
     count = 0
-    for i in range(0, MAX_ATTEMPTS):
+    for i in range(0, 1):
 
         if(COUNT_OF_TWEETS_TO_BE_FETCHED < len(old_tweets)):
             break # we reached our goal
@@ -157,7 +160,7 @@ def fill_in_missing():
 
             try:
 
-                results = api.search(q="apple", lang="en", count='100', since_id= last_tweet_id )
+                results = api.search(q="apple", lang="en", count='20', since_id= last_tweet_id )
                 #to see the structure of a single status uncomment this
                 #print(results[0])
 
@@ -196,6 +199,9 @@ def fill_in_missing():
             favorited      = result.favorited
             favorite_count = result.favorite_count
             created_at     = result.created_at
+            time_in_seconds      = created_at.timestamp()
+            adjust_to_EST   = time_in_seconds - 18000
+            timestamp       = datetime.datetime.fromtimestamp(adjust_to_EST).strftime('%Y-%m-%d %H:%M:%S')
 
             result  =   {
 
@@ -217,19 +223,19 @@ def fill_in_missing():
                         }
 
             old_tweets.append(result)
-
+            print(created_at)
             print(result["created_at"])
             print(len(old_tweets))
 
-
-
+        old_tweets = old_tweets[::-1]
+        process_old_tweets(old_tweets)
         # STEP 3: Get the next max_id
         try:
             # Parse the data returned to get max_id to be passed in next call.
             next_max_id = results[-1].id
-            if next_max_id == last_id:
+            if next_max_id == last_tweet_id:
                 print("we've reached the end")
-                
+
             created_at = results[-1].created_at
 
             #track ids to make sure they are different
@@ -240,13 +246,27 @@ def fill_in_missing():
 
             #reverse the old_tweet array so the oldest one can be inserted into the db first
             old_tweets = old_tweets[::-1]
-            process_old_tweets(old_tweets)
+            #process_old_tweets(old_tweets)
             #iterate through old tweets and pass the data to the sentiment function
             break
 
 def process_old_tweets(old_tweets):
+    print("processing old tweets")
     for tweet in old_tweets:
-        get_sentiment(tweet.created_at, twee.tweet_id, tweet.username, tweet.user_id, tweet.favorited, tweet.favorite_count, tweet.retweeted, tweet.retweet_count, tweet.followers, tweet.following, tweet.text)
+        print(tweet)
+        get_sentiment(
+                        tweet["created_at"],
+                        tweet["tweet_id"],
+                        tweet["author"]["username"],
+                        tweet["author"]["id"],
+                        tweet["author"]["favorited"],
+                        tweet["author"]["favorite_count"],
+                        tweet["author"]["retweeted"],
+                        tweet["author"]["retweet_count"],
+                        tweet["author"]["followers"],
+                        tweet["author"]["following"],
+                        tweet["text"]
+                    )
 
 class listener(StreamListener):
 
