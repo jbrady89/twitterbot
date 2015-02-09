@@ -227,6 +227,9 @@ def fill_in_missing():
         try:
             # Parse the data returned to get max_id to be passed in next call.
             next_max_id = results[-1].id
+            if next_max_id == last_id:
+                print("we've reached the end")
+                
             created_at = results[-1].created_at
 
             #track ids to make sure they are different
@@ -237,9 +240,13 @@ def fill_in_missing():
 
             #reverse the old_tweet array so the oldest one can be inserted into the db first
             old_tweets = old_tweets[::-1]
-            #pass iterate through old tweets and pass the data to the sentiment function
+            process_old_tweets(old_tweets)
+            #iterate through old tweets and pass the data to the sentiment function
             break
 
+def process_old_tweets(old_tweets):
+    for tweet in old_tweets:
+        get_sentiment(tweet.created_at, twee.tweet_id, tweet.username, tweet.user_id, tweet.favorited, tweet.favorite_count, tweet.retweeted, tweet.retweet_count, tweet.followers, tweet.following, tweet.text)
 
 class listener(StreamListener):
 
