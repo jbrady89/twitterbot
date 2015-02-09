@@ -87,6 +87,8 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
     #http://stackoverflow.com/questions/5729500/how-does-sqlalchemy-handle-unique-constraint-in-table-definition
     # convert twitter timestamp into seconds subtract 5 hours and then reformat it
     # in order to get EST
+    print(created_at)
+    #formatted_date = created_at.strftime('%Y-%m-%d %H:%M:%S', created_at.strptime(created_at,'%a %b %d %H:%M:%S +0000 %Y'))
     timestamp = created_at.timestamp()
     timestamp = int(timestamp) - 18000
     timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
@@ -116,20 +118,31 @@ def process_data(data):
 
     #output formatted json to the console
     #print( json.dumps( tweet, sort_keys=True, indent=4, separators=(',', ': ') ) )
+    try:
+        #tweet = json.loads(data)
+        print(tweet['id'])
+        tweet_id = tweet['id']
+        username = tweet['user']['screen_name']
+        followers = tweet['user']['followers_count']
+        following = tweet['user']['friends_count']
+        retweeted = tweet['retweeted']
+        retweet_count = tweet['retweet_count']
+        favorited = tweet['favorited']
+        favorite_count = tweet['favorite_count']
+        created_at = tweet['created_at']
+        user_id = tweet['user']['id']
+        text = tweet['text']
+        print(created_at)
+        get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_count, retweeted, retweet_count, followers, following, text)
 
-    tweet_id = tweet['id']
-    username = tweet['user']['screen_name']
-    followers = tweet['user']['followers_count']
-    following = tweet['user']['friends_count']
-    retweeted = tweet['retweeted']
-    retweet_count = tweet['retweet_count']
-    favorited = tweet['favorited']
-    favorite_count = tweet['favorite_count']
-    created_at = tweet['created_at']
-    user_id = tweet['user']['id']
-    text = tweet['text']
+    except:
 
-    get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_count, retweeted, retweet_count, followers, following, text)
+        print("something went wrong")
+        print(traceback.format_exc())
+        print(data)
+        time.sleep(10)
+
+        #get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_count, retweeted, retweet_count, followers, following, text)
 
 # call this to fill in missing tweets if program goes stalls/goes offline
 
