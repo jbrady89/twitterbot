@@ -10,7 +10,7 @@ api = Twython(app_key=consumer_key, app_secret=consumer_secret, oauth_token=acce
 
 tweets                          =   []
 MAX_ATTEMPTS                    =   10000
-COUNT_OF_TWEETS_TO_BE_FETCHED   =   50000 
+COUNT_OF_TWEETS_TO_BE_FETCHED   =   50000
 count = 0
 for i in range(0,MAX_ATTEMPTS):
 
@@ -25,7 +25,7 @@ for i in range(0,MAX_ATTEMPTS):
 
     # STEP 1: Query Twitter
     if(0 == i):
-        # Query twitter for data. 
+        # Query twitter for data.
         try:
             results = api.search(q="Apple",count='100')
         except:
@@ -37,9 +37,9 @@ for i in range(0,MAX_ATTEMPTS):
         print("next page")
         # After the first call we should have max_id from result of previous call. Pass it in query.
         try:
-            results = api.search(q="$FB", count='100', include_entities='true', max_id=next_max_id)
+            results = api.search(q="stocks OR options OR trades OR trading OR futures OR forex", count='100', include_entities='true', max_id=next_max_id)
             #print("else \n\n\n")
-        except: 
+        except:
             print("fook")
             time.sleep(900)
             continue
@@ -72,4 +72,3 @@ for i in range(0,MAX_ATTEMPTS):
         # No more next pages
         print("no more pages")
         break
-
