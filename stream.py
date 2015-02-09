@@ -75,7 +75,7 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
         print("Negative: {}".format(negative_count))
         print("Neutral: {} \n".format(neutral_count))
 
-    else: 
+    else:
         #print("the tweet is not in english")
         return
 
@@ -123,6 +123,142 @@ def process_data(data):
 
     get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_count, retweeted, retweet_count, followers, following, text)
 
+# call this to fill in missing tweets if program goes offline
+auth = OAuthHandler(consumer_key, consumer_secret)
+auth.set_access_token(access_token, access_token_secret)
+import tweepy
+api = tweepy.API(auth)
+old_tweets = []
+def fill_in_missing():
+    tweets                          =   []
+    last_ids                        =   []
+    MAX_ATTEMPTS                    =   10000
+    COUNT_OF_TWEETS_TO_BE_FETCHED   =   50000
+    count = 0
+    for i in range(0,1):
+
+        if(COUNT_OF_TWEETS_TO_BE_FETCHED < len(tweets)):
+            break # we got 500 tweets... !!
+
+        #----------------------------------------------------------------#
+        # STEP 1: Query Twitter
+        # STEP 2: Save the returned tweets
+        # STEP 3: Get the next max_id
+        #----------------------------------------------------------------#
+
+        # STEP 1: Query Twitter
+        if(0 == i):
+            # Query twitter for data.
+            last_tweet = session.query(Tweet).order_by(Tweet.id.desc()).first()
+            last_tweet_id = last_tweet.tweet_id
+            print(last_tweet_id)
+
+            try:
+
+                results = api.search(q="apple", lang="en", count='2', since_id= last_tweet_id )
+                #print(results[0])
+                #results = results[::-1]
+
+            except:
+                # rate limit exceeded
+                print("fook")
+                print(traceback.format_exc())
+                time.sleep(900)
+                continue
+
+        else:
+            print("next page")
+            # After the first call we should have max_id from result of previous call. Pass it in query.
+            try:
+                results = api.search(q="apple", lang="en", count='100', since_id=last_tweet_id , max_id=next_max_id)
+                #print("else \n\n\n")
+                tweets.append(results.reverse())
+            except:
+                # rate limit exceeded
+                print("fook")
+                time.sleep(900)
+                continue
+
+        # STEP 2: Save the returned tweets
+
+        for result in results:
+            #print(result.id, "\n")
+            #print(result)
+            text = result.text
+            tweet_id = result.id
+            author = result.author
+            user_id = author.id
+            username = author.screen_name
+            following = author.friends_count
+            followers = author.followers_count
+            retweeted = result.retweeted
+            retweet_count = result.retweet_count
+            favorited = result.favorited
+            favorite_count = result.favorite_count
+            created_at = result.created_at
+
+            result  =   {
+
+                            "text": text,
+                            "tweet_id": tweet_id,
+                            "author": {
+                                "username": username,
+                                "id": user_id,
+                                "following": following,
+                                "followers": followers,
+                                "retweeted": retweeted,
+                                "retweet_count": retweet_count,
+                                "favorited": favorited,
+                                "favorite_count": favorite_count
+                            },
+                            "created_at": int(created_at.strftime("%S"))
+
+                        }
+
+            old_tweets.append(result)
+            print(old_tweets)
+            print(len(old_tweets))
+
+            #tweet_data = { tweet_id}
+            #result.username
+
+            #print(result.text, "\n", result.id, result.created_at, author.id , author.screen_name, "\n")
+            '''
+            tweet_text = result['text']
+            followers = result['user']['followers_count']
+            favs = result['favorite_count']
+            rts = result['retweet_count']
+            created_at = result['created_at']
+            #for key in result.keys(): print( key )
+            #print(result['user'], '\n')
+            #print(json.dumps(result, sort_keys=True, indent=4, separators=(',', ': ') ) )
+            #print("text: {}, followers: {}, rts: {}, favs: {}".format(tweet_text, followers, rts, favs) )
+            count += 1
+            tweets.append(tweet_text)
+            print("count: ", len(tweets), "\n", "created at: ", created_at)
+
+            #print("\n", count)'''
+
+
+
+        # STEP 3: Get the next max_id
+        try:
+            # Parse the data returned to get max_id to be passed in consequent call.
+            #print(results)
+            next_max_id = results[-1].id
+            created_at = results[-1].created_at
+            last_ids.append(next_max_id)
+            #print(created_at)
+            #print(last_ids)
+            #next_results_url_params    = results['search_metadata']['next_results']
+            #print(next_results_url_params)
+            #next_max_id        = next_results_url_params.split('max_id=')[1].split('&')[0]
+        except:
+            # No more next pages
+            print("no more pages")
+            #reverse the array so the newest one is last before starting to insert into the db
+            break
+
 
 class listener(StreamListener):
 
@@ -132,12 +268,14 @@ class listener(StreamListener):
     def on_error(self, status):
         print( status.text )
 
+fill_in_missing()
 
+'''
 auth = OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 twitterStream = Stream(auth, listener())
 while True:  #Endless loop: personalize to suit your own purposes
-    try: 
+    try:
         twitterStream.filter(track=[
                                     "apple",
                                     "aapl",
@@ -162,3 +300,4 @@ while True:  #Endless loop: personalize to suit your own purposes
         time.sleep(1)
         twitterStream = Stream(auth, listener())
         continue
+'''
