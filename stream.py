@@ -71,7 +71,7 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
             print("polarity is undefined \n")
 
         total = positive_count + negative_count + neutral_count
-        polarity_average = (999*polarity_average + polarity) / 1000
+        polarity_average = (9999*polarity_average + polarity) / 10000
         print("Total processed: {}".format(total))
         print("Average sentiment: {}".format(polarity_average))
         print("Positive: {}".format(positive_count))
@@ -160,8 +160,8 @@ while True:  #Endless loop: personalize to suit your own purposes
     except:
         #e = sys.exc_info()[0]  #Get exception info (optional)
         #print ('ERROR:',e ) #Print exception info (optional)
-        print(traceback.format_exc())
-        print("sleeping")
-        time.sleep(1)
+        #print(traceback.format_exc())
+        #print("sleeping")
+        #time.sleep(1)
         twitterStream = Stream(auth, listener())
         continue
