@@ -10,11 +10,11 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy_declarative import Tweet, User, Price
 from textblob import TextBlob
 
+args = sys.argv
 
 def process_old_tweets(old_tweets):
     print("processing old tweets")
     for tweet in old_tweets:
-        print(tweet)
         stream.get_sentiment(
                         tweet["created_at"],
                         tweet["tweet_id"],
@@ -29,12 +29,13 @@ def process_old_tweets(old_tweets):
                         tweet["text"]
                     )
 
-def fill_in_missing():
+def fill_in_missing(args):
     old_tweets                      =   []
     last_ids                        =   []
     MAX_ATTEMPTS                    =   10000
     COUNT_OF_TWEETS_TO_BE_FETCHED   =   50000
     count = 0
+
     while True:
 
         #----------------------------------------------------------------#
@@ -45,15 +46,21 @@ def fill_in_missing():
 
         # STEP 1: Query Twitter
         if(count == 0):
-            # get the last tweet_id from Tweet table
+            
+            # if no ids are supplied from the command line use the last recorded tweet
+            if len(args) == 1:
+                last_tweet = stream.session.query(Tweet).order_by(Tweet.id.desc()).first()
+                from_id = last_tweet.tweet_id
+                to_id = ""
+            else:
+                # ids from the command line
+                from_id = args[1]
+                to_id = args[2]
 
-            last_tweet = stream.session.query(Tweet).order_by(Tweet.id.desc()).first()
-            last_tweet_id = last_tweet.tweet_id
-            print("last tweet_id", last_tweet_id, "\n")
 
             try:
 
-                results = api.search(q="Apple OR aapl OR iphone OR ipad OR ipod OR imac OR macbook", lang="en", count='100', since_id= last_tweet_id )
+                results = api.search(q="Apple OR aapl OR iphone OR ipad OR ipod OR imac OR macbook", lang="en", count='100', since_id=from_id, max_id=to_id )
                 #to see the structure of a single status uncomment this
                 #print(results[0])
 
@@ -70,7 +77,7 @@ def fill_in_missing():
             print("next page")
             # After the first call we should have max_id from result of previous call. Pass it in query.
             try:
-                results = api.search(q="Apple OR aapl OR iphone OR ipad OR ipod OR imac OR macbook", lang="en", count='100', since_id=last_tweet_id , max_id=next_max_id)
+                results = api.search(q="Apple OR aapl OR iphone OR ipad OR ipod OR imac OR macbook", lang="en", count='100', since_id=from_id , max_id=next_max_id)
             except:
                 # rate limit exceeded
                 print("fook")
@@ -114,8 +121,8 @@ def fill_in_missing():
 
             old_tweets.append(result)
 
-            print(result["created_at"])
-            print(len(old_tweets))
+            #print(result["created_at"])
+            #print(len(old_tweets))
 
         # STEP 3: Get the next max_id
         try:
@@ -145,4 +152,4 @@ auth = OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth)
 
-fill_in_missing()
+fill_in_missing(args)
