@@ -208,5 +208,5 @@ keywords = [
             "osx",
             "tim cook"
             ]
-#start_stream(twitterStream, keywords)
-#fill_in_missing()
+
+start_stream(twitterStream, keywords)
