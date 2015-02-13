@@ -29,6 +29,7 @@ print ( "Connected!\n" )
 
 Base = declarative_base()
 Session = sessionmaker(bind=engine)
+global session
 session = Session()
 
 count = 0
@@ -78,7 +79,7 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
         print("Negative: {}".format(negative_count))
         print("Neutral: {} \n".format(neutral_count))
 
-    else: 
+    else:
         #print("the tweet is not in english")
         return
 
@@ -140,7 +141,7 @@ auth = OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 twitterStream = Stream(auth, listener())
 while True:  #Endless loop: personalize to suit your own purposes
-    try: 
+    try:
         twitterStream.filter(track=[
                                     "apple",
                                     "aapl",
