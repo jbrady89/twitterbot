@@ -1,13 +1,3 @@
-import datetime, threading, time, json, requests, langid, sys, traceback
-import tweepy
-from tweepy import Stream, OAuthHandler, StreamListener
-from sqlalchemy import create_engine, Column, Integer, Float, Text, Boolean
-from sqlalchemy import DateTime
-from sqlalchemy import or_
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy_declarative import Tweet, User, Price
-from textblob import TextBlob
 import stream
 
 def process_old_tweets(old_tweets):
