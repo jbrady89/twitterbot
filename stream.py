@@ -23,6 +23,7 @@ print ( "Connected!\n" )
 
 Base = declarative_base()
 Session = sessionmaker(bind=engine)
+global session
 session = Session()
 
 consumer_key = "rY3Q4lLIAcLRXPm66JoU2jL8X"
@@ -166,139 +167,6 @@ def process_data(data):
 
 # call this to fill in missing tweets if program goes stalls/goes offline
 
-def fill_in_missing():
-    old_tweets                      =   []
-    last_ids                        =   []
-    MAX_ATTEMPTS                    =   10000
-    COUNT_OF_TWEETS_TO_BE_FETCHED   =   50000
-    count = 0
-    for i in range(0, MAX_ATTEMPTS):
-
-        if(COUNT_OF_TWEETS_TO_BE_FETCHED < len(old_tweets)):
-            break # we reached our goal
-
-        #----------------------------------------------------------------#
-        # STEP 1: Query Twitter
-        # STEP 2: Save the returned tweets
-        # STEP 3: Get the next max_id
-        #----------------------------------------------------------------#
-
-        # STEP 1: Query Twitter
-        if(0 == i):
-            # get the last tweet_id from Tweet table
-
-            last_tweet = session.query(Tweet).order_by(Tweet.id.desc()).first()
-            last_tweet_id = last_tweet.tweet_id
-            print("last tweet_id", last_tweet_id, "\n")
-
-            try:
-
-                results = api.search(q="apple", lang="en", count='100', since_id= last_tweet_id )
-                #to see the structure of a single status uncomment this
-                #print(results[0])
-
-            except:
-                # rate limit exceeded
-                print("fook")
-                print(traceback.format_exc())
-                time.sleep(900)
-                continue
-
-        else:
-            print("next page")
-            # After the first call we should have max_id from result of previous call. Pass it in query.
-            try:
-                results = api.search(q="apple", lang="en", count='100', since_id=last_tweet_id , max_id=next_max_id)
-            except:
-                # rate limit exceeded
-                print("fook")
-                time.sleep(900)
-                continue
-
-        # STEP 2: Save the returned tweets
-
-        for result in results:
-
-
-            text           = result.text
-            tweet_id       = result.id
-            author         = result.author
-            user_id        = author.id
-            username       = author.screen_name
-            following      = author.friends_count
-            followers      = author.followers_count
-            retweeted      = result.retweeted
-            retweet_count  = result.retweet_count
-            favorited      = result.favorited
-            favorite_count = result.favorite_count
-            created_at     = result.created_at
-            time_in_seconds      = created_at.timestamp()
-            adjust_to_EST   = time_in_seconds - 18000
-            timestamp       = datetime.datetime.fromtimestamp(adjust_to_EST).strftime('%Y-%m-%d %H:%M:%S')
-
-            result  =   {
-
-                            "text": text,
-                            "tweet_id": tweet_id,
-                            "author": {
-                                "username": username,
-                                "id": user_id,
-                                "following": following,
-                                "followers": followers,
-                                "retweeted": retweeted,
-                                "retweet_count": retweet_count,
-                                "favorited": favorited,
-                                "favorite_count": favorite_count
-                            },
-                            # need to format this
-                            "created_at": timestamp
-
-                        }
-
-            old_tweets.append(result)
-            print(created_at)
-            print(result["created_at"])
-            print(len(old_tweets))
-
-        #old_tweets = old_tweets[::-1]
-        #process_old_tweets(old_tweets)
-        # STEP 3: Get the next max_id
-        try:
-            # Parse the data returned to get max_id to be passed in next call.
-            next_max_id = results[-1].id
-
-            created_at = results[-1].created_at
-
-            #track ids to make sure they are different
-            last_ids.append(next_max_id)
-        except:
-            # No more next pages
-            print("no more pages")
-
-            #reverse the old_tweet array so the oldest one can be inserted into the db first
-            old_tweets = old_tweets[::-1]
-            process_old_tweets(old_tweets)
-            #iterate through old tweets and pass the data to the sentiment function
-            break
-
-def process_old_tweets(old_tweets):
-    print("processing old tweets")
-    for tweet in old_tweets:
-        print(tweet)
-        get_sentiment(
-                        tweet["created_at"],
-                        tweet["tweet_id"],
-                        tweet["author"]["username"],
-                        tweet["author"]["id"],
-                        tweet["author"]["favorited"],
-                        tweet["author"]["favorite_count"],
-                        tweet["author"]["retweeted"],
-                        tweet["author"]["retweet_count"],
-                        tweet["author"]["followers"],
-                        tweet["author"]["following"],
-                        tweet["text"]
-                    )
-
 class listener(StreamListener):
 
     def on_data(self, data):
@@ -307,30 +175,10 @@ class listener(StreamListener):
     def on_error(self, status):
         print( status )
 
-fill_in_missing()
-
-
-auth = OAuthHandler(consumer_key, consumer_secret)
-auth.set_access_token(access_token, access_token_secret)
-twitterStream = Stream(auth, listener())
-#start_stream(twitterStream)
-def start_stream(twitterStream):
+def start_stream(twitterStream, keywords):
     while True:  #Endless loop: personalize to suit your own purposes
         try:
-            twitterStream.filter(track=[
-                                        "apple",
-                                        "aapl",
-                                        "imac",
-                                        "ios",
-                                        "ipad",
-                                        "iphone",
-                                        "ipod",
-                                        "iwatch",
-                                        "mac",
-                                        "os x",
-                                        "osx",
-                                        "tim cook"
-                                        ], languages=["en"]
+            twitterStream.filter(track=keywords, languages=["en"]
                                     )
 
         except:
@@ -341,3 +189,24 @@ def start_stream(twitterStream):
             #time.sleep(1)
             twitterStream = Stream(auth, listener())
             continue
+
+
+auth = OAuthHandler(consumer_key, consumer_secret)
+auth.set_access_token(access_token, access_token_secret)
+twitterStream = Stream(auth, listener())
+keywords = [
+            "apple",
+            "aapl",
+            "imac",
+            "ios",
+            "ipad",
+            "iphone",
+            "ipod",
+            "iwatch",
+            "mac",
+            "os x",
+            "osx",
+            "tim cook"
+            ]
+#start_stream(twitterStream, keywords)
+#fill_in_missing()
