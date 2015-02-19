@@ -24,6 +24,8 @@ print ( "Connected!\n" )
 Base = declarative_base()
 Session = sessionmaker(bind=engine)
 global session
+global auth
+global api
 session = Session()
 
 consumer_key = "rY3Q4lLIAcLRXPm66JoU2jL8X"
@@ -45,10 +47,10 @@ total = 0
 def isTimeFormat(input):
     try:
         time.strptime(input, '%a %b %d %H:%M:%S +0000 %Y')
-        print("true")
+
         return True
     except ValueError:
-        print("false")
+
         return False
 
 def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_count, retweeted, retweet_count, followers, following, text):
@@ -116,6 +118,7 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
     user = session.query(User).filter_by(user_id=user_id).first()
     tweet = session.query(Tweet).filter_by(tweet_id=tweet_id).first()
     if user:
+        print("user exists")
         if tweet:
             print(username)
         else:
@@ -144,6 +147,8 @@ def process_data(data):
         #print(tweet['id'])
         tweet_id = tweet['id']
         username = tweet['user']['screen_name']
+        #print(username, "\n")
+        #time.sleep(5)
         followers = tweet['user']['followers_count']
         following = tweet['user']['friends_count']
         retweeted = tweet['retweeted']
@@ -157,11 +162,7 @@ def process_data(data):
         get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_count, retweeted, retweet_count, followers, following, text)
 
     except:
-
-        print("something went wrong")
-        print(traceback.format_exc())
-        print(data)
-        #time.sleep(10)
+        return
 
         #get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_count, retweeted, retweet_count, followers, following, text)
 
@@ -178,15 +179,12 @@ class listener(StreamListener):
 def start_stream(twitterStream, keywords):
     while True:  #Endless loop: personalize to suit your own purposes
         try:
-            twitterStream.filter(track=keywords, languages=["en"]
-                                    )
+            twitterStream.filter(track=keywords, languages=["en"] )
 
         except:
             #e = sys.exc_info()[0]  #Get exception info (optional)
             #print ('ERROR:',e ) #Print exception info (optional)
-            print(traceback.format_exc())
-            print("sleeping")
-            #time.sleep(1)
+            #print(traceback.format_exc())
             twitterStream = Stream(auth, listener())
             continue
 
@@ -194,19 +192,27 @@ def start_stream(twitterStream, keywords):
 auth = OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 twitterStream = Stream(auth, listener())
+'''
+"apple",
+"aapl",
+"imac",
+"ios",
+"ipad",
+"iphone",
+"ipod",
+"iwatch",
+"mac",
+"os x",
+"osx",
+"tim cook"
+'''
+
 keywords = [
-            "apple",
-            "aapl",
-            "imac",
-            "ios",
-            "ipad",
-            "iphone",
-            "ipod",
-            "iwatch",
-            "mac",
-            "os x",
-            "osx",
-            "tim cook"
+            
+            "bitcoin",
+            "btc",
+
             ]
 
-#start_stream(twitterStream, keywords)
+if __name__ == "__main__":
+    start_stream(twitterStream, keywords)
