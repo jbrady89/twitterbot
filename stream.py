@@ -30,6 +30,8 @@ print ( "Connected!\n" )
 Base = declarative_base()
 Session = sessionmaker(bind=engine)
 global session
+global auth
+global api
 session = Session()
 
 count = 0
