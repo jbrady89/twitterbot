@@ -136,7 +136,8 @@ class listener(StreamListener):
     def on_error(self, status):
         print( status.text )
 
-
+#old way
+'''
 auth = OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 twitterStream = Stream(auth, listener())
@@ -166,3 +167,42 @@ while True:  #Endless loop: personalize to suit your own purposes
         #time.sleep(1)
         twitterStream = Stream(auth, listener())
         continue
+'''
+
+def start_stream(twitterStream, keywords):
+    while True:  #Endless loop: personalize to suit your own purposes
+        try:
+            twitterStream.filter(track=keywords, languages=["en"] )
+
+        except:
+            #e = sys.exc_info()[0]  #Get exception info (optional)
+            #print ('ERROR:',e ) #Print exception info (optional)
+            #print(traceback.format_exc())
+            twitterStream = Stream(auth, listener())
+            continue
+
+
+auth = OAuthHandler(consumer_key, consumer_secret)
+auth.set_access_token(access_token, access_token_secret)
+twitterStream = Stream(auth, listener())
+
+keywords = [
+            
+            "apple",
+            "aapl",
+            "imac",
+            "ios",
+            "ipad",
+            "iphone",
+            "ipod",
+            "iwatch",
+            "mac",
+            "os x",
+            "osx",
+            "tim cook"
+
+            ]
+
+#prevent this function from starting again when fill.py is run
+if __name__ == "__main__":
+    start_stream(twitterStream, keywords)
