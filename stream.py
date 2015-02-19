@@ -41,6 +41,16 @@ neutral_count  = 0
 polarity_total = 0
 polarity_average = 0
 total = 0
+
+def isTimeFormat(input):
+    try:
+        time.strptime(input, '%a %b %d %H:%M:%S +0000 %Y')
+
+        return True
+    except ValueError:
+
+        return False
+
 def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_count, retweeted, retweet_count, followers, following, text):
     global count
     global positive_count
@@ -85,9 +95,25 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
         #print("the tweet is not in english")
         return
 
-    #http://stackoverflow.com/questions/5729500/how-does-sqlalchemy-handle-unique-constraint-in-table-definition
-    timestamp = time.time()
-    timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+     #http://stackoverflow.com/questions/5729500/how-does-sqlalchemy-handle-unique-constraint-in-table-definition
+    # in order to get EST
+    #print("90: " , created_at)
+    #check the format and adjust accordingly
+    #search method and stream method give different values for "created_at"
+    if isTimeFormat(created_at):
+
+        formatted_date = time.strftime('%Y-%m-%d %H:%M:%S', time.strptime(created_at,'%a %b %d %H:%M:%S +0000 %Y'))
+        #http://stackoverflow.com/questions/9637838/convert-string-date-to-timestamp-in-python
+        date_in_seconds = time.mktime(datetime.datetime.strptime(formatted_date, "%Y-%m-%d %H:%M:%S").timetuple())
+        # subtract 5 hours from UTC to get EST
+        adjusted_time = int(date_in_seconds) - 18000
+        timestamp = datetime.datetime.fromtimestamp(adjusted_time).strftime('%Y-%m-%d %H:%M:%S')
+
+    else:
+        #print(formatted_date)
+        timestamp = created_at
+
+        
     user = session.query(User).filter(or_(User.user_id==user_id, User.username==username)).first()
     tweet = session.query(Tweet).filter_by(tweet_id=tweet_id).first()
     if user:
