@@ -1,4 +1,5 @@
 import datetime, threading, time, json, requests, langid, sys, traceback
+import tweepy
 from tweepy import Stream, OAuthHandler, StreamListener
 from sqlalchemy import create_engine, Column, Integer, Float, Text, Boolean
 from sqlalchemy import DateTime
@@ -223,6 +224,7 @@ def start_stream(twitterStream, keywords):
 auth = OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 twitterStream = Stream(auth, listener())
+api = tweepy.API(auth)
 
 keywords = [
             
