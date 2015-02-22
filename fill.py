@@ -62,7 +62,7 @@ def fill_in_missing(args):
 
             try:
 
-                results = stream.api.search(q="Apple OR aapl OR iphone OR ipad OR ipod OR imac OR macbook", lang="en", count='100', since_id=from_id, max_id=to_id )
+                results = stream.api.search(q="aapl OR apple OR imac OR ios OR ipad OR iphone OR ipod OR iwatch OR mac OR macbook OR os x OR osx OR steve jobs OR tim cook", lang="en", count='100', since_id=from_id, max_id=to_id )
                 #to see the structure of a single status uncomment this
                 #print(results[0])
 
@@ -79,7 +79,7 @@ def fill_in_missing(args):
             print("next page")
             # After the first call we should have max_id from result of previous call. Pass it in query.
             try:
-                results = stream.api.search(q="Apple OR aapl OR iphone OR ipad OR ipod OR imac OR macbook", lang="en", count='100', since_id=from_id , max_id=next_max_id)
+                results = stream.api.search(q="aapl OR apple OR imac OR ios OR ipad OR iphone OR ipod OR iwatch OR mac OR macbook OR os x OR osx OR steve jobs OR tim cook", lang="en", count='100', since_id=from_id , max_id=next_max_id)
             except:
                 # rate limit exceeded
                 print("fook")
