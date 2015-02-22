@@ -1,4 +1,3 @@
-import stream
 import datetime, threading, time, json, requests, langid, sys, traceback
 import tweepy
 from tweepy import Stream, OAuthHandler, StreamListener
@@ -9,6 +8,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_declarative import Tweet, User, Price
 from textblob import TextBlob
+import stream
+
+
 
 args = sys.argv
 
@@ -46,7 +48,7 @@ def fill_in_missing(args):
 
         # STEP 1: Query Twitter
         if(count == 0):
-            
+
             # if no ids are supplied from the command line use the last recorded tweet
             if len(args) == 1:
                 last_tweet = stream.session.query(Tweet).order_by(Tweet.id.desc()).first()
@@ -60,7 +62,7 @@ def fill_in_missing(args):
 
             try:
 
-                results = api.search(q="Apple OR aapl OR iphone OR ipad OR ipod OR imac OR macbook", lang="en", count='100', since_id=from_id, max_id=to_id )
+                results = stream.api.search(q="Apple OR aapl OR iphone OR ipad OR ipod OR imac OR macbook", lang="en", count='100', since_id=from_id, max_id=to_id )
                 #to see the structure of a single status uncomment this
                 #print(results[0])
 
@@ -77,7 +79,7 @@ def fill_in_missing(args):
             print("next page")
             # After the first call we should have max_id from result of previous call. Pass it in query.
             try:
-                results = api.search(q="Apple OR aapl OR iphone OR ipad OR ipod OR imac OR macbook", lang="en", count='100', since_id=from_id , max_id=next_max_id)
+                results = stream.api.search(q="Apple OR aapl OR iphone OR ipad OR ipod OR imac OR macbook", lang="en", count='100', since_id=from_id , max_id=next_max_id)
             except:
                 # rate limit exceeded
                 print("fook")
@@ -143,13 +145,5 @@ def fill_in_missing(args):
             #iterate through old tweets and pass the data to the sentiment function
             process_old_tweets(old_tweets)
             break
-
-consumer_key = "rY3Q4lLIAcLRXPm66JoU2jL8X"
-consumer_secret = "xkTrpkamaiDQaiAdEvcvJLj6hmaLH0DL2m5bE4l4H7ROFuRKBC"
-access_token = "928665026-VghhFE4Xxovwv1Sz7Ivizdm6bGjEQn2yFGgd5TIy"
-access_token_secret = "xtdeTR1eEkSwlhPwj02OLle64kPFvBUYgfx9FsuaozZdI"
-auth = OAuthHandler(consumer_key, consumer_secret)
-auth.set_access_token(access_token, access_token_secret)
-api = tweepy.API(auth)
 
 fill_in_missing(args)
