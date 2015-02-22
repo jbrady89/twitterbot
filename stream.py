@@ -40,6 +40,8 @@ negative_count = 0
 neutral_count  = 0
 polarity_total = 0
 polarity_average = 0
+positive_polarity_average = 0
+negative_polarity_average = 0
 total = 0
 
 def isTimeFormat(input):
@@ -58,6 +60,8 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
     global neutral_count
     global polarity_total
     global polarity_average
+    global positive_polarity_average
+    global negative_polarity_average
     global total
     count += 1
 
@@ -74,9 +78,11 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
         if polarity < 0:
             negative_count += 1
             #print("negative_count: {} \n".format(negative_count))
+            negative_polarity_average = (9999*negative_polarity_average + polarity) / 10000
         elif polarity > 0:
             positive_count += 1
             #print("positive_count: {} \n".format(positive_count))
+            positive_polarity_average = (9999*positive_polarity_average + polarity) / 10000
         elif polarity == 0.0:
             neutral_count += 1
             #print("neutral: {} \n".format(neutral_count))
@@ -84,8 +90,12 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
             print("polarity is undefined \n")
 
         total = positive_count + negative_count + neutral_count
-        polarity_average = (9999*polarity_average + polarity) / 10000
+        if polarity != 0.0:
+            polarity_average = (9999*polarity_average + polarity) / 10000
+
         print("Total processed: {}".format(total))
+        print("Average positive sentiment: {}".format(positive_polarity_average))
+        print("Average negative sentiment: {}".format(negative_polarity_average))
         print("Average sentiment: {}".format(polarity_average))
         print("Positive: {}".format(positive_count))
         print("Negative: {}".format(negative_count))
