@@ -34,6 +34,7 @@ def process_old_tweets(old_tweets):
 def fill_in_missing(args):
     old_tweets                      =   []
     last_ids                        =   []
+    #next_max_id                     =   None
     MAX_ATTEMPTS                    =   10000
     COUNT_OF_TWEETS_TO_BE_FETCHED   =   50000
     count = 0
@@ -62,7 +63,7 @@ def fill_in_missing(args):
 
             try:
 
-                results = stream.api.search(q="Apple OR aapl OR iphone OR ipad OR ipod OR imac OR macbook", lang="en", count='100', since_id=from_id, max_id=to_id )
+                results = stream.api.search(q="Apple OR aapl OR iphone OR ipad OR ipod OR imac OR macbook OR Tim+Cook OR OS+X", lang="en", count='100', since_id=from_id, max_id=to_id )
                 #to see the structure of a single status uncomment this
                 #print(results[0])
 
@@ -79,7 +80,7 @@ def fill_in_missing(args):
             print("next page")
             # After the first call we should have max_id from result of previous call. Pass it in query.
             try:
-                results = stream.api.search(q="Apple OR aapl OR iphone OR ipad OR ipod OR imac OR macbook", lang="en", count='100', since_id=from_id , max_id=next_max_id)
+                results = stream.api.search(q="Apple OR aapl OR iphone OR ipad OR ipod OR imac OR macbook OR Tim+Cook OR OS+X", lang="en", count='100', since_id=from_id , max_id=next_max_id)
             except:
                 # rate limit exceeded
                 print("fook")
@@ -121,7 +122,13 @@ def fill_in_missing(args):
                                     "created_at": timestamp
                                 }
 
-            old_tweets.append(result)
+            if tweet_id == to_id:
+                print("the end")
+                
+                break
+            else:
+                old_tweets.append(result)
+                next_max_id = results[-1].id
 
             #print(result["created_at"])
             #print(len(old_tweets))
@@ -130,8 +137,8 @@ def fill_in_missing(args):
         try:
 
             # Parse the data returned to get max_id to be passed in next call.
-            next_max_id = results[-1].id
 
+            next_max_id = results[-1].id
             #track ids to make sure they are different
             #last_ids.append(next_max_id)
         except:

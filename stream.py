@@ -209,8 +209,18 @@ twitterStream = Stream(auth, listener())
 
 keywords = [
             
-            "bitcoin",
-            "btc",
+            "apple",
+            "aapl",
+            "imac",
+            "ios",
+            "ipad",
+            "iphone",
+            "ipod",
+            "iwatch",
+            "mac",
+            "os x",
+            "osx",
+            "tim cook"
 
             ]
 
