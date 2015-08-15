@@ -70,7 +70,7 @@ def get_quote():
     #the current time
     print ( time.time() )
     get_stock_data() #get the current price
-    next_call = next_call + 1.00 #schedule the next call for 1 minute in the future
+    next_call = next_call + 60 #schedule the next call for 1 minute in the future
     #this sets up the 1 minute interval running in the background
     price_timer = threading.Timer( next_call - time.time(), get_quote )
     price_timer.start()
@@ -97,7 +97,7 @@ def get_data_from_period(period):
 
 
 #get_historic_data("AAPL")
-#get_data_from_period('2015-2-3 15:00:0')
+#get_data_from_period('2015-2-3 15:00:0')   
 #get_bloomberg_data("AAPL")
 #next_call = time.time()
 get_quote()

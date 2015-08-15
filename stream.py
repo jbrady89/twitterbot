@@ -1,5 +1,5 @@
 import datetime, threading, time, json, requests, langid, sys, traceback
-import tweepy
+import tweepy, config
 from tweepy import Stream, OAuthHandler, StreamListener
 from sqlalchemy import create_engine, Column, Integer, Float, Text, Boolean
 from sqlalchemy import DateTime
@@ -28,10 +28,11 @@ global auth
 global api
 session = Session()
 
-consumer_key = "rY3Q4lLIAcLRXPm66JoU2jL8X"
-consumer_secret = "xkTrpkamaiDQaiAdEvcvJLj6hmaLH0DL2m5bE4l4H7ROFuRKBC"
-access_token = "928665026-VghhFE4Xxovwv1Sz7Ivizdm6bGjEQn2yFGgd5TIy"
-access_token_secret = "xtdeTR1eEkSwlhPwj02OLle64kPFvBUYgfx9FsuaozZdI"
+consumer_key = config.consumer_key
+consumer_secret = config.consumer_secret
+access_token = config.access_token
+access_token_secret = config.access_token_secret
+print (consumer_key)
 auth = OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth)
@@ -208,19 +209,8 @@ twitterStream = Stream(auth, listener())
 '''
 
 keywords = [
-            
-            "apple",
-            "aapl",
-            "imac",
-            "ios",
-            "ipad",
-            "iphone",
-            "ipod",
-            "iwatch",
-            "mac",
-            "os x",
-            "osx",
-            "tim cook"
+
+            "Donald Trump", "Trump"
 
             ]
 

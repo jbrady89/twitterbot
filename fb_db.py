@@ -1,5 +1,6 @@
 import time, traceback
 import tweepy
+import config
 from tweepy import OAuthHandler
 from sqlalchemy import create_engine, BigInteger, Column, Integer, Text
 from sqlalchemy.ext.declarative import declarative_base
@@ -24,10 +25,10 @@ Base = declarative_base()
 Session = sessionmaker(bind=engine)
 session = Session()
 
-consumer_key = "irbICd8MdaQ0r2o6zvrfvwfdz"
-consumer_secret = "TkocspkbAASks3vYv896pwh3bBEmxihzKwoT4ZtQblyZ4UhsoE"
-access_token = "3044811100-1G3VrzIsOEkm1cTAXa15wqBH0O56hfwDmQCVcWF"
-access_token_secret = "fDhL7RsFINKV3qg5hym1KDs0a1SGLW0R6i17aAL28nj9V"
+consumer_key = config.consumer_key
+consumer_secret = config.consumer_secret
+access_token = config.access_token
+access_token_secret = config.access_token_secret
 auth = OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth)
