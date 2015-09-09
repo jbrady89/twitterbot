@@ -151,7 +151,6 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
 
         posts.insert(tweet)
 
-
     else:
         print('adding new user')
         time.sleep(5)
