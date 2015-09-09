@@ -153,6 +153,7 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
 
     else:
         print('adding new user')
+        
         time.sleep(5)
 
         tweet = {
