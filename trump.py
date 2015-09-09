@@ -45,6 +45,9 @@ positive_polarity_average = 0
 negative_polarity_average = 0
 total = 0
 
+def Tweet( object ):
+    pass
+
 def isTimeFormat(input):
     try:
         time.strptime(input, '%a %b %d %H:%M:%S +0000 %Y')
@@ -63,6 +66,7 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
     global polarity_average
     global positive_polarity_average
     global negative_polarity_average
+    global polarity
     global total
     count += 1
 
@@ -97,6 +101,7 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
         print("Total processed: {}".format(total))
         print("Average positive sentiment: {}".format(positive_polarity_average))
         print("Average negative sentiment: {}".format(negative_polarity_average))
+        print("Polarity: {}".format(polarity))
         print("Average sentiment: {}".format(polarity_average))
         print("Positive: {}".format(positive_count))
         print("Negative: {}".format(negative_count))
@@ -130,43 +135,61 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
     user = posts.find({'user.screen_name' : username}).count()
 
     if user:
-        print('user exists')
+        print 'user exists'
+        try:
+            polarity * 2
+            
+        except ValueError:
+            print polarity 
 
+        time.sleep(5)
+        print tweet_id, user_id, polarity, username, timestamp, polarity_average, text
+        test_obj = { '0' : '0', '1': '0', '1':'0'}
+        print test_obj
         tweet = {
             'tweet_id' : tweet_id,
-            'user_id' : user.id,
-            'username' : user.screen_name,
+            'user_id' : user_id,
+            'username' : username,
             'timestamp' : timestamp,
             'sentiment' : polarity,
             'average_sentiment' : polarity_average,
             'text' : text
         }
-            
-        json_data = json.dumps(tweet)
-        print(json_data)
-        posts.insert(json_data)
+
+        print "tweet: {}".format(tweet)
+        post_id = posts.insert_one(tweet).inserted_id
+        print "new tweet with id {} was inserted!".format(post_id)        
+        # t = Tweet()
+        # setattr( t, 'tweet', tweet )
+        # td = t.tweet
+        # print td
+        # json_data = json.dumps(tweet)
+        # print "json: {}".formt(json_data)
+        # posts.insert(json_data)
 
     else:
         print('adding new user')
-        print(tweet_id)
+        time.sleep(5)
+        print tweet_id, user_id, polarity, username, timestamp, polarity_average, text
         test_obj = { '0' : '0', '1': '0', '1':'0'}
-        print(test_obj)
+        print test_obj
         tweet = {
             'tweet_id' : tweet_id,
-            'user_id' : user.id,
-            'username' : user.screen_name,
+            'user_id' : user_id,
+            'username' : username,
             'timestamp' : timestamp,
             'sentiment' : polarity,
             'average_sentiment' : polarity_average,
             'text' : text
         }
-            
-        print(tweet)
+
+        print "tweet: {}".format(tweet)
+        posts.insert(tweet)
 
 def process_data(data):
     tweet = json.loads(data)
     #print(tweet)
-    posts.insert(tweet)
+    #posts.insert(tweet)
     #output formatted json to the console
     #print( json.dumps( tweet, sort_keys=True, indent=4, separators=(',', ': ') ) )
 
