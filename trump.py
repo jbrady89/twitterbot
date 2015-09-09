@@ -136,16 +136,9 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
 
     if user:
         print 'user exists'
-        try:
-            polarity * 2
-            
-        except ValueError:
-            print polarity 
 
         time.sleep(5)
-        print tweet_id, user_id, polarity, username, timestamp, polarity_average, text
-        test_obj = { '0' : '0', '1': '0', '1':'0'}
-        print test_obj
+
         tweet = {
             'tweet_id' : tweet_id,
             'user_id' : user_id,
@@ -157,22 +150,13 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
         }
 
         print "tweet: {}".format(tweet)
-        post_id = posts.insert_one(tweet).inserted_id
-        print "new tweet with id {} was inserted!".format(post_id)        
-        # t = Tweet()
-        # setattr( t, 'tweet', tweet )
-        # td = t.tweet
-        # print td
-        # json_data = json.dumps(tweet)
-        # print "json: {}".formt(json_data)
-        # posts.insert(json_data)
+        posts.insert(tweet)
+
 
     else:
         print('adding new user')
         time.sleep(5)
-        print tweet_id, user_id, polarity, username, timestamp, polarity_average, text
-        test_obj = { '0' : '0', '1': '0', '1':'0'}
-        print test_obj
+
         tweet = {
             'tweet_id' : tweet_id,
             'user_id' : user_id,
