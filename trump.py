@@ -149,7 +149,6 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
             'text' : text
         }
 
-        print "tweet: {}".format(tweet)
         posts.insert(tweet)
 
 
@@ -167,7 +166,6 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
             'text' : text
         }
 
-        print "tweet: {}".format(tweet)
         posts.insert(tweet)
 
 def process_data(data):
