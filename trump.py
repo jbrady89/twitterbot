@@ -18,16 +18,10 @@ consumer_secret = "zKKxkRVMkgdnF3VPkvEc8RzzQt9EjdpTLOPs5XO2CGIZuruW4m"
 access_token = "105344276-MKAKZytLqQ3Y53AxV0ji6hyhsLA3dFig7ce5FKC2"
 access_token_secret = "HZLAI3XrWSvhBKHouXB1jSuoEsCT7N6NhAaOywarOQDJG"
 
-username = "postgres"
-password = "postgres"
-port = "5432"
-db = "twitterbot"
-
 client = MongoClient('localhost', 27017)
 db = client.test_database
 posts = db.posts
 
-print(posts)
 #print ( "Connecting to database\n")
 
 #engine = create_engine("postgresql+psycopg2://{}:{}@localhost:{}/{}".format(username, password, port, db))
@@ -137,36 +131,42 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
 
     if user:
         print('user exists')
-        tweet_data = Tweet( tweet_id = tweet_id, user_id=user.id, text=text, retweet=retweeted, retweet_count=retweet_count, timestamp=timestamp, sentiment=polarity )
-        #session.add(tweet_data)
-        #session.commit()
-        keys = ['tweet_id', 'user_id', 'retweet', 'retweet_count', 'timestamp', 'sentiment']
-        values = [tweet_id, user.id, rewteeted, retweet_count, timtestamp, polarity]
-        tweet = {}
-        for index, key in keys:
-            tweet[key] = values[index]
+
+        tweet = {
+            'tweet_id' : tweet_id,
+            'user_id' : user.id,
+            'username' : user.screen_name,
+            'timestamp' : timestamp,
+            'sentiment' : polarity,
+            'average_sentiment' : polarity_average,
+            'text' : text
+        }
+            
         json_data = json.dumps(tweet)
         print(json_data)
         posts.insert(json_data)
+
     else:
         print('adding new user')
-        tweet_data = Tweet( tweet_id = tweet_id, user_id=user.id, text=text, retweet=retweeted, retweet_count=retweet_count, timestamp=timestamp, sentiment=polarity )
-        #session.add(tweet_data)
-        #session.commit()
-        keys = ['tweet_id', 'user_id', 'retweet', 'retweet_count', 'timestamp', 'sentiment']
-        values = [tweet_id, user.id, rewteeted, retweet_count, timtestamp, polarity]
-        tweet = {}
-        for index, key in keys:
-            tweet[key] = values[index]
-
-        json_data = json.dumps(tweet)
-        print(json_data)
-        posts.insert(json_data)
+        print(tweet_id)
+        test_obj = { '0' : '0', '1': '0', '1':'0'}
+        print(test_obj)
+        tweet = {
+            'tweet_id' : tweet_id,
+            'user_id' : user.id,
+            'username' : user.screen_name,
+            'timestamp' : timestamp,
+            'sentiment' : polarity,
+            'average_sentiment' : polarity_average,
+            'text' : text
+        }
+            
+        print(tweet)
 
 def process_data(data):
     tweet = json.loads(data)
     #print(tweet)
-    #posts.insert(tweet)
+    posts.insert(tweet)
     #output formatted json to the console
     #print( json.dumps( tweet, sort_keys=True, indent=4, separators=(',', ': ') ) )
 
@@ -192,39 +192,6 @@ class listener(StreamListener):
 
     def on_error(self, status):
         print( status.text )
-
-#old way
-'''
-auth = OAuthHandler(consumer_key, consumer_secret)
-auth.set_access_token(access_token, access_token_secret)
-twitterStream = Stream(auth, listener())
-while True:  #Endless loop: personalize to suit your own purposes
-    try:
-        twitterStream.filter(track=[
-                                    "apple",
-                                    "aapl",
-                                    "imac",
-                                    "ios",
-                                    "ipad",
-                                    "iphone",
-                                    "ipod",
-                                    "iwatch",
-                                    "mac",
-                                    "os x",
-                                    "osx",
-                                    "tim cook"
-                                    ], languages=["en"]
-                                )
-
-    except:
-        #e = sys.exc_info()[0]  #Get exception info (optional)
-        #print ('ERROR:',e ) #Print exception info (optional)
-        #print(traceback.format_exc())
-        #print("sleeping")
-        #time.sleep(1)
-        twitterStream = Stream(auth, listener())
-        continue
-'''
 
 def start_stream(twitterStream, keywords):
     while True:  #Endless loop: personalize to suit your own purposes
