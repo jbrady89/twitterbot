@@ -12,10 +12,10 @@ from textblob import TextBlob
 # check your credentials
 print("check your credentials")
 
-consumer_key = "TylYDYasSIRJ9RIo12Ir4oV8r"
-consumer_secret = "zKKxkRVMkgdnF3VPkvEc8RzzQt9EjdpTLOPs5XO2CGIZuruW4m"
-access_token = "105344276-MKAKZytLqQ3Y53AxV0ji6hyhsLA3dFig7ce5FKC2"
-access_token_secret = "HZLAI3XrWSvhBKHouXB1jSuoEsCT7N6NhAaOywarOQDJG"
+consumer_key = ""
+consumer_secret = ""
+access_token = ""
+access_token_secret = ""
 
 username = "postgres"
 password = "postgres"
