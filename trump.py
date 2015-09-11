@@ -1,5 +1,5 @@
 import datetime, threading, time, json, requests, langid, sys, traceback
-import tweepy, pymongo
+import tweepy, pymongo, credentials
 from pymongo import MongoClient
 from tweepy import Stream, OAuthHandler, StreamListener
 from sqlalchemy import create_engine, Column, Integer, Float, Text, Boolean
@@ -13,10 +13,10 @@ from textblob import TextBlob
 # check your credentials
 print("check your credentials")
 
-consumer_key = "TylYDYasSIRJ9RIo12Ir4oV8r"
-consumer_secret = "zKKxkRVMkgdnF3VPkvEc8RzzQt9EjdpTLOPs5XO2CGIZuruW4m"
-access_token = "105344276-MKAKZytLqQ3Y53AxV0ji6hyhsLA3dFig7ce5FKC2"
-access_token_secret = "HZLAI3XrWSvhBKHouXB1jSuoEsCT7N6NhAaOywarOQDJG"
+consumer_key = credentials.key
+consumer_secret = credentials.secret
+access_token = credentials.token
+access_token_secret = credentials.token_secret
 
 client = MongoClient('localhost', 27017)
 db = client.test_database
@@ -138,11 +138,12 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
         print 'user exists'
 
         time.sleep(5)
-
+        timestamp = time.time()
         tweet = {
             'tweet_id' : tweet_id,
             'user_id' : user_id,
             'username' : username,
+            'created_at' : created_at,
             'timestamp' : timestamp,
             'sentiment' : polarity,
             'average_sentiment' : polarity_average,
@@ -155,11 +156,12 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
         print('adding new user')
         
         time.sleep(5)
-
+        timestamp = time.time()
         tweet = {
             'tweet_id' : tweet_id,
             'user_id' : user_id,
             'username' : username,
+            'created_at' : created_at,
             'timestamp' : timestamp,
             'sentiment' : polarity,
             'average_sentiment' : polarity_average,
