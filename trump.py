@@ -135,7 +135,7 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
     user = posts.find({'user.screen_name' : username}).count()
 
     if user:
-        print 'user exists'
+        print('user exists')
 
         time.sleep(5)
         timestamp = time.time()
