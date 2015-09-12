@@ -43,12 +43,18 @@ sentiment_MAs = []
 print("processing tweet sentiments...\n")
 
 tweets = session.query(Tweet).all()
+<<<<<<< HEAD
 tweet_count = 0
 
 for tweet in tweets:
     sentiments.append(tweet.sentiment)
     tweet_count += 1
     print(tweet_count)
+=======
+
+for tweet in tweets:
+	sentiments.append(tweet.sentiment)
+>>>>>>> b09c53e91ac595519cc77c5ab8372a81065473bb
 
 print(sentiments)
 

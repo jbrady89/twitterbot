@@ -34,7 +34,10 @@ def process_old_tweets(old_tweets):
 def fill_in_missing(args):
     old_tweets                      =   []
     last_ids                        =   []
+<<<<<<< HEAD
     #next_max_id                     =   None
+=======
+>>>>>>> b09c53e91ac595519cc77c5ab8372a81065473bb
     MAX_ATTEMPTS                    =   10000
     COUNT_OF_TWEETS_TO_BE_FETCHED   =   50000
     count = 0
@@ -63,9 +66,15 @@ def fill_in_missing(args):
 
             try:
 
+<<<<<<< HEAD
                 results = stream.api.search(q="aapl OR apple OR imac OR ios OR ipad OR iphone OR ipod OR iwatch OR mac OR macbook OR os+x OR osx OR steve+jobs OR tim+cook", lang="en", count='100', since_id=from_id, max_id=to_id )
                 #to see the structure of a single status uncomment this
                 print(results)
+=======
+                results = stream.api.search(q="aapl OR apple OR imac OR ios OR ipad OR iphone OR ipod OR iwatch OR mac OR macbook OR os x OR osx OR steve jobs OR tim cook", lang="en", count='100', since_id=from_id, max_id=to_id )
+                #to see the structure of a single status uncomment this
+                #print(results[0])
+>>>>>>> b09c53e91ac595519cc77c5ab8372a81065473bb
 
             except:
                 # rate limit exceeded
@@ -80,7 +89,11 @@ def fill_in_missing(args):
             print("next page")
             # After the first call we should have max_id from result of previous call. Pass it in query.
             try:
+<<<<<<< HEAD
                 results = stream.api.search(q="aapl OR apple OR imac OR ios OR ipad OR iphone OR ipod OR iwatch OR mac OR macbook OR os+x OR osx OR steve+jobs OR tim+cook", lang="en", count='100', since_id=from_id , max_id=next_max_id)
+=======
+                results = stream.api.search(q="aapl OR apple OR imac OR ios OR ipad OR iphone OR ipod OR iwatch OR mac OR macbook OR os x OR osx OR steve jobs OR tim cook", lang="en", count='100', since_id=from_id , max_id=next_max_id)
+>>>>>>> b09c53e91ac595519cc77c5ab8372a81065473bb
             except:
                 # rate limit exceeded
                 print("fook")
@@ -122,6 +135,7 @@ def fill_in_missing(args):
                                     "created_at": timestamp
                                 }
 
+<<<<<<< HEAD
             if tweet_id == to_id:
                 print("the end")
                 
@@ -129,6 +143,9 @@ def fill_in_missing(args):
             else:
                 old_tweets.append(result)
                 next_max_id = results[-1].id
+=======
+            old_tweets.append(result)
+>>>>>>> b09c53e91ac595519cc77c5ab8372a81065473bb
 
             #print(result["created_at"])
             #print(len(old_tweets))
@@ -137,8 +154,13 @@ def fill_in_missing(args):
         try:
 
             # Parse the data returned to get max_id to be passed in next call.
+<<<<<<< HEAD
 
             next_max_id = results[-1].id
+=======
+            next_max_id = results[-1].id
+
+>>>>>>> b09c53e91ac595519cc77c5ab8372a81065473bb
             #track ids to make sure they are different
             #last_ids.append(next_max_id)
         except:

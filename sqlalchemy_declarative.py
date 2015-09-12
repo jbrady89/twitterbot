@@ -21,7 +21,7 @@ class Tweet(Base):
     __tablename__ = 'tweets'
 
     id = Column(Integer, primary_key=True, index=True)
-    tweet_id = Column(BigInteger, unique=True)
+    tweet_id = Column(BigInteger, index=True, unique=True)
     user_id = Column(Integer, index=True)
     text = Column(Text)
     retweet = Column(Boolean)
@@ -36,8 +36,8 @@ class User(Base):
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(BigInteger, unique=True)
-    username = Column(Text, unique=True)
+    user_id = Column(BigInteger, index=True, unique=True)
+    username = Column(Text, index=True, unique=True)
     followers = Column(Integer)
     following = Column(Integer)
 

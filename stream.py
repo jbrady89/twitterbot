@@ -1,5 +1,9 @@
 import datetime, threading, time, json, requests, langid, sys, traceback
+<<<<<<< HEAD
 import tweepy, config
+=======
+import tweepy
+>>>>>>> b09c53e91ac595519cc77c5ab8372a81065473bb
 from tweepy import Stream, OAuthHandler, StreamListener
 from sqlalchemy import create_engine, Column, Integer, Float, Text, Boolean
 from sqlalchemy import DateTime
@@ -9,6 +13,15 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy_declarative import Tweet, User, Price
 from textblob import TextBlob
 
+<<<<<<< HEAD
+=======
+print("check your credentials")
+
+consumer_key = ""
+consumer_secret = ""
+access_token = ""
+access_token_secret = ""
+>>>>>>> b09c53e91ac595519cc77c5ab8372a81065473bb
 
 username = "postgres"
 password = "password"
@@ -43,6 +56,8 @@ negative_count = 0
 neutral_count  = 0
 polarity_total = 0
 polarity_average = 0
+positive_polarity_average = 0
+negative_polarity_average = 0
 total = 0
 
 def isTimeFormat(input):
@@ -61,6 +76,8 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
     global neutral_count
     global polarity_total
     global polarity_average
+    global positive_polarity_average
+    global negative_polarity_average
     global total
     count += 1
 
@@ -77,9 +94,11 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
         if polarity < 0:
             negative_count += 1
             #print("negative_count: {} \n".format(negative_count))
+            negative_polarity_average = (9999*negative_polarity_average + polarity) / 10000
         elif polarity > 0:
             positive_count += 1
             #print("positive_count: {} \n".format(positive_count))
+            positive_polarity_average = (9999*positive_polarity_average + polarity) / 10000
         elif polarity == 0.0:
             neutral_count += 1
             #print("neutral: {} \n".format(neutral_count))
@@ -87,8 +106,12 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
             print("polarity is undefined \n")
 
         total = positive_count + negative_count + neutral_count
-        polarity_average = (999*polarity_average + polarity) / 1000
+        if polarity != 0.0:
+            polarity_average = (9999*polarity_average + polarity) / 10000
+
         print("Total processed: {}".format(total))
+        print("Average positive sentiment: {}".format(positive_polarity_average))
+        print("Average negative sentiment: {}".format(negative_polarity_average))
         print("Average sentiment: {}".format(polarity_average))
         print("Positive: {}".format(positive_count))
         print("Negative: {}".format(negative_count))
@@ -98,7 +121,11 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
         #print("the tweet is not in english")
         return
 
+<<<<<<< HEAD
     #http://stackoverflow.com/questions/5729500/how-does-sqlalchemy-handle-unique-constraint-in-table-definition
+=======
+     #http://stackoverflow.com/questions/5729500/how-does-sqlalchemy-handle-unique-constraint-in-table-definition
+>>>>>>> b09c53e91ac595519cc77c5ab8372a81065473bb
     # in order to get EST
     #print("90: " , created_at)
     #check the format and adjust accordingly
@@ -116,7 +143,12 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
         #print(formatted_date)
         timestamp = created_at
 
+<<<<<<< HEAD
     user = session.query(User).filter_by(user_id=user_id).first()
+=======
+        
+    user = session.query(User).filter(or_(User.user_id==user_id, User.username==username)).first()
+>>>>>>> b09c53e91ac595519cc77c5ab8372a81065473bb
     tweet = session.query(Tweet).filter_by(tweet_id=tweet_id).first()
     if user:
         print("user exists")
@@ -133,7 +165,7 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
             user_data = User( user_id=user_id, username=username, followers=followers, following=following)
             session.add(user_data)
             session.commit()
-            user = session.query(User).filter_by(user_id=user_id).first()
+            user = session.query(User).filter(or_(User.user_id==user_id, User.username==username)).first()
             tweet_data = Tweet( tweet_id=tweet_id, user_id=user.id, text=text, retweet=retweeted, retweet_count=retweet_count,timestamp=timestamp, sentiment=polarity )
             session.add(tweet_data)
             session.commit()
@@ -189,10 +221,12 @@ def start_stream(twitterStream, keywords):
             twitterStream = Stream(auth, listener())
             continue
 
-
+#old way
+'''
 auth = OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 twitterStream = Stream(auth, listener())
+<<<<<<< HEAD
 '''
 "apple",
 "aapl",
@@ -214,5 +248,71 @@ keywords = [
 
             ]
 
+=======
+while True:  #Endless loop: personalize to suit your own purposes
+    try:
+        twitterStream.filter(track=[
+                                    "apple",
+                                    "aapl",
+                                    "imac",
+                                    "ios",
+                                    "ipad",
+                                    "iphone",
+                                    "ipod",
+                                    "iwatch",
+                                    "mac",
+                                    "os x",
+                                    "osx",
+                                    "tim cook"
+                                    ], languages=["en"]
+                                )
+
+    except:
+        #e = sys.exc_info()[0]  #Get exception info (optional)
+        #print ('ERROR:',e ) #Print exception info (optional)
+        #print(traceback.format_exc())
+        #print("sleeping")
+        #time.sleep(1)
+        twitterStream = Stream(auth, listener())
+        continue
+'''
+
+def start_stream(twitterStream, keywords):
+    while True:  #Endless loop: personalize to suit your own purposes
+        try:
+            twitterStream.filter(track=keywords, languages=["en"] )
+
+        except:
+            #e = sys.exc_info()[0]  #Get exception info (optional)
+            #print ('ERROR:',e ) #Print exception info (optional)
+            #print(traceback.format_exc())
+            twitterStream = Stream(auth, listener())
+            continue
+
+
+auth = OAuthHandler(consumer_key, consumer_secret)
+auth.set_access_token(access_token, access_token_secret)
+twitterStream = Stream(auth, listener())
+api = tweepy.API(auth)
+
+keywords = [
+            
+            "apple",
+            "aapl",
+            "imac",
+            "ios",
+            "ipad",
+            "iphone",
+            "ipod",
+            "iwatch",
+            "mac",
+            "os x",
+            "osx",
+            "tim cook"
+
+            ]
+
+#prevent this function from starting again when fill.py is run
+>>>>>>> b09c53e91ac595519cc77c5ab8372a81065473bb
 if __name__ == "__main__":
     start_stream(twitterStream, keywords)
