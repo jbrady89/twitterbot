@@ -1,5 +1,5 @@
 import datetime, threading, time, json, requests, langid, sys, traceback
-import tweepy, pymongo, credentials
+import tweepy, pymongo, config
 from pymongo import MongoClient
 from tweepy import Stream, OAuthHandler, StreamListener
 from sqlalchemy import create_engine, Column, Integer, Float, Text, Boolean
@@ -13,10 +13,10 @@ from textblob import TextBlob
 # check your credentials
 print("check your credentials")
 
-consumer_key = credentials.key
-consumer_secret = credentials.secret
-access_token = credentials.token
-access_token_secret = credentials.token_secret
+consumer_key = config.key
+consumer_secret = config.secret
+access_token = config.token
+access_token_secret = config.token_secret
 
 client = MongoClient('localhost', 27017)
 db = client.test_database
@@ -135,7 +135,7 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
     user = posts.find({'user.screen_name' : username}).count()
 
     if user:
-        print('user exists')
+        print 'user exists'
 
         time.sleep(5)
         timestamp = time.time()
