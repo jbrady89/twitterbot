@@ -1,5 +1,6 @@
 import datetime, threading, time, json, requests, langid, sys, traceback
-import tweepy
+import tweepy, pymongo, credentials
+from pymongo import MongoClient
 from tweepy import Stream, OAuthHandler, StreamListener
 from sqlalchemy import create_engine, Column, Integer, Float, Text, Boolean
 from sqlalchemy import DateTime
@@ -9,30 +10,30 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy_declarative import Tweet, User, Price
 from textblob import TextBlob
 
+# check your credentials
 print("check your credentials")
 
-consumer_key = ""
-consumer_secret = ""
-access_token = ""
-access_token_secret = ""
+consumer_key = credentials.key
+consumer_secret = credentials.secret
+access_token = credentials.token
+access_token_secret = credentials.token_secret
 
-username = "postgres"
-password = "postgres"
-port = "5432"
-db = "twitterbot"
+client = MongoClient('localhost', 27017)
+db = client.test_database
+posts = db.posts
 
-print ( "Connecting to database\n")
+#print ( "Connecting to database\n")
 
-engine = create_engine("postgresql+psycopg2://{}:{}@localhost:{}/{}".format(username, password, port, db))
+#engine = create_engine("postgresql+psycopg2://{}:{}@localhost:{}/{}".format(username, password, port, db))
 
-print ( "Connected!\n" )
+#print ( "Connected!\n" )
 
-Base = declarative_base()
-Session = sessionmaker(bind=engine)
+#Base = declarative_base()
+#Session = sessionmaker(bind=engine)
 global session
 global auth
 global api
-session = Session()
+#session = Session()
 
 count = 0
 positive_count = 0
@@ -43,6 +44,9 @@ polarity_average = 0
 positive_polarity_average = 0
 negative_polarity_average = 0
 total = 0
+
+def Tweet( object ):
+    pass
 
 def isTimeFormat(input):
     try:
@@ -62,6 +66,7 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
     global polarity_average
     global positive_polarity_average
     global negative_polarity_average
+    global polarity
     global total
     count += 1
 
@@ -96,13 +101,14 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
         print("Total processed: {}".format(total))
         print("Average positive sentiment: {}".format(positive_polarity_average))
         print("Average negative sentiment: {}".format(negative_polarity_average))
+        print("Polarity: {}".format(polarity))
         print("Average sentiment: {}".format(polarity_average))
         print("Positive: {}".format(positive_count))
         print("Negative: {}".format(negative_count))
         print("Neutral: {} \n".format(neutral_count))
 
     else:
-        #print("the tweet is not in english")
+        print("the tweet is not in english")
         return
 
      #http://stackoverflow.com/questions/5729500/how-does-sqlalchemy-handle-unique-constraint-in-table-definition
@@ -124,30 +130,50 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
         timestamp = created_at
 
         
-    user = session.query(User).filter(or_(User.user_id==user_id, User.username==username)).first()
-    tweet = session.query(Tweet).filter_by(tweet_id=tweet_id).first()
+    #user = session.query(User).filter(or_(User.user_id==user_id, User.username==username)).first()
+    #tweet = session.query(Tweet).filter_by(tweet_id=tweet_id).first()
+    user = posts.find({'user.screen_name' : username}).count()
+
     if user:
-        if tweet:
-            print(username)
-        else:
-            tweet_data = Tweet( tweet_id = tweet_id, user_id=user.id, text=text, retweet=retweeted, retweet_count=retweet_count, timestamp=timestamp, sentiment=polarity )
-            session.add(tweet_data)
-            session.commit()
+        print 'user exists'
+
+        time.sleep(5)
+        timestamp = time.time()
+        tweet = {
+            'tweet_id' : tweet_id,
+            'user_id' : user_id,
+            'username' : username,
+            'created_at' : created_at,
+            'timestamp' : timestamp,
+            'sentiment' : polarity,
+            'average_sentiment' : polarity_average,
+            'text' : text
+        }
+
+        posts.insert(tweet)
+
     else:
-        if tweet:
-            print(username)
-        else:
-            user_data = User( user_id=user_id, username=username, followers=followers, following=following)
-            session.add(user_data)
-            session.commit()
-            user = session.query(User).filter(or_(User.user_id==user_id, User.username==username)).first()
-            tweet_data = Tweet( tweet_id=tweet_id, user_id=user.id, text=text, retweet=retweeted, retweet_count=retweet_count,timestamp=timestamp, sentiment=polarity )
-            session.add(tweet_data)
-            session.commit()
+        print('adding new user')
+        
+        time.sleep(5)
+        timestamp = time.time()
+        tweet = {
+            'tweet_id' : tweet_id,
+            'user_id' : user_id,
+            'username' : username,
+            'created_at' : created_at,
+            'timestamp' : timestamp,
+            'sentiment' : polarity,
+            'average_sentiment' : polarity_average,
+            'text' : text
+        }
+
+        posts.insert(tweet)
 
 def process_data(data):
     tweet = json.loads(data)
-
+    #print(tweet)
+    #posts.insert(tweet)
     #output formatted json to the console
     #print( json.dumps( tweet, sort_keys=True, indent=4, separators=(',', ': ') ) )
 
@@ -174,39 +200,6 @@ class listener(StreamListener):
     def on_error(self, status):
         print( status.text )
 
-#old way
-'''
-auth = OAuthHandler(consumer_key, consumer_secret)
-auth.set_access_token(access_token, access_token_secret)
-twitterStream = Stream(auth, listener())
-while True:  #Endless loop: personalize to suit your own purposes
-    try:
-        twitterStream.filter(track=[
-                                    "apple",
-                                    "aapl",
-                                    "imac",
-                                    "ios",
-                                    "ipad",
-                                    "iphone",
-                                    "ipod",
-                                    "iwatch",
-                                    "mac",
-                                    "os x",
-                                    "osx",
-                                    "tim cook"
-                                    ], languages=["en"]
-                                )
-
-    except:
-        #e = sys.exc_info()[0]  #Get exception info (optional)
-        #print ('ERROR:',e ) #Print exception info (optional)
-        #print(traceback.format_exc())
-        #print("sleeping")
-        #time.sleep(1)
-        twitterStream = Stream(auth, listener())
-        continue
-'''
-
 def start_stream(twitterStream, keywords):
     while True:  #Endless loop: personalize to suit your own purposes
         try:
@@ -227,18 +220,7 @@ api = tweepy.API(auth)
 
 keywords = [
             
-            "apple",
-            "aapl",
-            "imac",
-            "ios",
-            "ipad",
-            "iphone",
-            "ipod",
-            "iwatch",
-            "mac",
-            "os x",
-            "osx",
-            "tim cook"
+            "trump", "donald trump"
 
             ]
 
