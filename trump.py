@@ -1,4 +1,4 @@
-import datetime, threading, time, json, requests, langid, sys, traceback
+import datetime, threading, re, time, json, requests, langid, sys, traceback
 import tweepy, pymongo, credentials
 from pymongo import MongoClient
 from tweepy import Stream, OAuthHandler, StreamListener
@@ -21,6 +21,7 @@ access_token_secret = credentials.token_secret
 client = MongoClient('localhost', 27017)
 db = client.test_database
 posts = db.posts
+tweets = db.tweets
 
 #print ( "Connecting to database\n")
 
@@ -40,7 +41,10 @@ positive_count = 0
 negative_count = 0
 neutral_count  = 0
 polarity_total = 0
-polarity_average = 0
+cursor = posts.find().sort( '_id' , pymongo.DESCENDING ).limit(1);
+for document in cursor:
+    print(document)
+    polarity_average = document['average_sentiment']
 positive_polarity_average = 0
 negative_polarity_average = 0
 total = 0
@@ -134,41 +138,40 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
     #tweet = session.query(Tweet).filter_by(tweet_id=tweet_id).first()
     user = posts.find({'user.screen_name' : username}).count()
 
-    if user:
-        print 'user exists'
+    # if user:
+    #     print 'user exists'
 
-        time.sleep(5)
-        timestamp = time.time()
-        tweet = {
-            'tweet_id' : tweet_id,
-            'user_id' : user_id,
-            'username' : username,
-            'created_at' : created_at,
-            'timestamp' : timestamp,
-            'sentiment' : polarity,
-            'average_sentiment' : polarity_average,
-            'text' : text
-        }
+    #     time.sleep(5)
+    #     timestamp = time.time() * 1000
+    #     tweet = {
+    #         'tweet_id' : tweet_id,
+    #         'user_id' : user_id,
+    #         'username' : username,
+    #         'created_at' : created_at,
+    #         'timestamp' : timestamp,
+    #         'sentiment' : polarity,
+    #         'average_sentiment' : polarity_average,
+    #         'text' : text
+    #     }
 
-        posts.insert(tweet)
+    #     posts.insert(tweet)
 
-    else:
-        print('adding new user')
+    # else:
+    #     print('adding new user')
         
-        time.sleep(5)
-        timestamp = time.time()
-        tweet = {
-            'tweet_id' : tweet_id,
-            'user_id' : user_id,
-            'username' : username,
-            'created_at' : created_at,
-            'timestamp' : timestamp,
-            'sentiment' : polarity,
-            'average_sentiment' : polarity_average,
-            'text' : text
-        }
+    timestamp = time.time() * 1000
+    tweet = {
+        'tweet_id' : tweet_id,
+        'user_id' : user_id,
+        'username' : username,
+        'created_at' : created_at,
+        'timestamp' : timestamp,
+        'sentiment' : polarity,
+        'average_sentiment' : polarity_average,
+        'text' : text
+    }
 
-        posts.insert(tweet)
+    tweets.insert(tweet)
 
 def process_data(data):
     tweet = json.loads(data)
@@ -176,20 +179,28 @@ def process_data(data):
     #posts.insert(tweet)
     #output formatted json to the console
     #print( json.dumps( tweet, sort_keys=True, indent=4, separators=(',', ': ') ) )
-
-    tweet_id = tweet['id']
-    username = tweet['user']['screen_name']
-    followers = tweet['user']['followers_count']
-    following = tweet['user']['friends_count']
-    retweeted = tweet['retweeted']
-    retweet_count = tweet['retweet_count']
-    favorited = tweet['favorited']
-    favorite_count = tweet['favorite_count']
-    created_at = tweet['created_at']
-    user_id = tweet['user']['id']
-    text = tweet['text']
-
-    get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_count, retweeted, retweet_count, followers, following, text)
+    if 'RT' not in tweet['text'].upper(): 
+        print(tweet['text'])
+        tweet_id = tweet['id']
+        username = tweet['user']['screen_name']
+        followers = tweet['user']['followers_count']
+        following = tweet['user']['friends_count']
+        retweeted = tweet['retweeted']
+        retweet_count = tweet['retweet_count']
+        favorited = tweet['favorited']
+        favorite_count = tweet['favorite_count']
+        created_at = tweet['created_at']
+        user_id = tweet['user']['id']
+        text = tweet['text']
+        text = re.sub(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '', text)
+        print("text: {}".format(text))
+        matches = tweets.find({'text' : text}).count()
+        print(matches)
+        if matches:
+            pass
+        else:
+            print("no matches")
+            get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_count, retweeted, retweet_count, followers, following, text)
 
 
 class listener(StreamListener):
@@ -220,9 +231,9 @@ api = tweepy.API(auth)
 
 keywords = [
             
-            "trump", "donald trump"
+            "trump"
 
-            ]
+        ]
 
 #prevent this function from starting again when fill.py is run
 if __name__ == "__main__":
