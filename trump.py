@@ -13,10 +13,10 @@ from textblob import TextBlob
 # check your credentials
 print("check your credentials")
 
-consumer_key = credentials.key
-consumer_secret = credentials.secret
-access_token = credentials.token
-access_token_secret = credentials.token_secret
+consumer_key = config.key
+consumer_secret = config.secret
+access_token = config.token
+access_token_secret = config.token_secret
 
 client = MongoClient('localhost', 27017)
 db = client.test_database
