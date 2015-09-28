@@ -12,16 +12,18 @@ from textblob import TextBlob
 
 # check your credentials
 print("check your credentials")
-
+config = credentials
 consumer_key = config.key
 consumer_secret = config.secret
 access_token = config.token
 access_token_secret = config.token_secret
 
-client = MongoClient('localhost', 27017)
-db = client.test_database
+client = MongoClient('mongodb://jb:geo@ds051893.mongolab.com/geostream', 51893)
+db = client.geostream
+print(db)
 posts = db.posts
 tweets = db.tweets
+
 
 #print ( "Connecting to database\n")
 
@@ -41,7 +43,7 @@ positive_count = 0
 negative_count = 0
 neutral_count  = 0
 polarity_total = 0
-cursor = posts.find().sort( '_id' , pymongo.DESCENDING ).limit(1);
+cursor = tweets.find().sort( '_id' , pymongo.DESCENDING ).limit(1);
 for document in cursor:
     print(document)
     polarity_average = document['average_sentiment']
