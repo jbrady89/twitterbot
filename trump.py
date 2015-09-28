@@ -17,8 +17,10 @@ consumer_key = config.key
 consumer_secret = config.secret
 access_token = config.token
 access_token_secret = config.token_secret
+db_user = sys.argv[1]
+db_pass = sys.argv[2]
 
-client = MongoClient('mongodb://jb:geo@ds051893.mongolab.com/geostream', 51893)
+client = MongoClient('mongodb://{}:{}@ds051893.mongolab.com/geostream'.format(db_user, db_pass), 51893)
 db = client.geostream
 print(db)
 posts = db.posts
