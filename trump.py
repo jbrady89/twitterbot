@@ -1,5 +1,5 @@
 import datetime, threading, re, time, json, requests, langid, sys, traceback
-import tweepy, pymongo, credentials
+import tweepy, pymongo, config
 from pymongo import MongoClient
 from tweepy import Stream, OAuthHandler, StreamListener
 from sqlalchemy import create_engine, Column, Integer, Float, Text, Boolean
