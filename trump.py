@@ -10,9 +10,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy_declarative import Tweet, User, Price
 from textblob import TextBlob
 
-# check your credentials
-print("check your credentials")
-config = credentials
+print(config)
 consumer_key = config.key
 consumer_secret = config.secret
 access_token = config.token
