@@ -2,6 +2,7 @@ import datetime, threading, re, time, json, requests, langid, sys, traceback
 import tweepy, pymongo, config
 from pymongo import MongoClient
 from tweepy import Stream, OAuthHandler, StreamListener
+import twitter
 from sqlalchemy import create_engine, Column, Integer, Float, Text, Boolean
 from sqlalchemy import DateTime
 from sqlalchemy import or_
@@ -12,12 +13,22 @@ from textblob import TextBlob
 
 print(config)
 consumer_key = config.key
-consumer_secret = config.secret
+consumer_secret = config.secret 
 access_token = config.token
 access_token_secret = config.token_secret
+# tapi = twitter.API(consumer_key=consumer_key, 
+# 		consumer_secret=consumer_secret, 
+# 		access_token_key=access_token, 
+# 		access_token_secret=access_token_secret)
+
+# print(tapi.verifyCredenials())
+#r = Twitter.request('geo/id/%s' % '27c45d804c777999.json')
+#data = r.json()
+#print(data)
+
 db_user = sys.argv[1]
 db_pass = sys.argv[2]
-
+print(db_user,db_pass)
 client = MongoClient('mongodb://{}:{}@ds051893.mongolab.com/geostream'.format(db_user, db_pass), 51893)
 db = client.geostream
 print(db)
@@ -63,7 +74,7 @@ def isTimeFormat(input):
 
         return False
 
-def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_count, retweeted, retweet_count, followers, following, text):
+def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_count, retweeted, retweet_count, followers, following, text, coordinates):
     global count
     global positive_count
     global negative_count
@@ -104,14 +115,14 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
         if polarity != 0.0:
             polarity_average = (9999*polarity_average + polarity) / 10000
 
-        print("Total processed: {}".format(total))
-        print("Average positive sentiment: {}".format(positive_polarity_average))
-        print("Average negative sentiment: {}".format(negative_polarity_average))
-        print("Polarity: {}".format(polarity))
-        print("Average sentiment: {}".format(polarity_average))
-        print("Positive: {}".format(positive_count))
-        print("Negative: {}".format(negative_count))
-        print("Neutral: {} \n".format(neutral_count))
+        # print("Total processed: {}".format(total))
+        # print("Average positive sentiment: {}".format(positive_polarity_average))
+        # print("Average negative sentiment: {}".format(negative_polarity_average))
+        # print("Polarity: {}".format(polarity))
+        # print("Average sentiment: {}".format(polarity_average))
+        # print("Positive: {}".format(positive_count))
+        # print("Negative: {}".format(negative_count))
+        # print("Neutral: {} \n".format(neutral_count))
 
     else:
         print("the tweet is not in english")
@@ -173,7 +184,16 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
         'text' : text
     }
 
-    tweets.insert(tweet)
+    if coordinates:
+    	print(coordinates)
+    	tweet.coordinates = coordinates
+
+
+    try:
+    	print("saving record")
+    	tweets.insert(tweet)
+    except pymongo.errors.OperationFailure as e:
+        print( "Could not connect to server: %s" % e)
 
 def process_data(data):
     tweet = json.loads(data)
@@ -182,11 +202,13 @@ def process_data(data):
     #output formatted json to the console
     #print( json.dumps( tweet, sort_keys=True, indent=4, separators=(',', ': ') ) )
     if 'RT' not in tweet['text'].upper(): 
-        print(tweet['text'])
+        #print(tweet['coordinates'])
         tweet_id = tweet['id']
         username = tweet['user']['screen_name']
         followers = tweet['user']['followers_count']
         following = tweet['user']['friends_count']
+        location = tweet['user']['location']
+        #print(location)
         retweeted = tweet['retweeted']
         retweet_count = tweet['retweet_count']
         favorited = tweet['favorited']
@@ -194,15 +216,22 @@ def process_data(data):
         created_at = tweet['created_at']
         user_id = tweet['user']['id']
         text = tweet['text']
+        place = tweet['place']
+        # if place:
+        # 	print(place)
+        # 	#place_data = api.geo(place.id)
+        # 	#print(place_data)
+        # 	#coordinates = place_data.centroid
+
         text = re.sub(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '', text)
-        print("text: {}".format(text))
+        #print("text: {}".format(text))
         matches = tweets.find({'text' : text}).count()
-        print(matches)
+        #print(matches)
         if matches:
             pass
         else:
-            print("no matches")
-            get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_count, retweeted, retweet_count, followers, following, text)
+            #print("no matches")
+            get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_count, retweeted, retweet_count, followers, following, coordinates=None)
 
 
 class listener(StreamListener):
