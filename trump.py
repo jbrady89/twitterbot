@@ -74,7 +74,7 @@ def isTimeFormat(input):
 
         return False
 
-def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_count, retweeted, retweet_count, followers, following, text, coordinates):
+def get_sentiment(created_at, tweet_id, username, user_id, text):
     global count
     global positive_count
     global negative_count
@@ -86,7 +86,7 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
     global polarity
     global total
     count += 1
-
+    print("getting sentiment")
     #timestamp = datetime.datetime.now()
     classify = langid.classify(text);
     lang = classify[0]
@@ -184,9 +184,11 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
         'text' : text
     }
 
-    if coordinates:
-    	print(coordinates)
-    	tweet.coordinates = coordinates
+    #print(tweet)
+    # if coordinates:
+    #     print(coordinates)
+    #     tweet.coordinates = coordinates
+		
 
 
     try:
@@ -196,6 +198,7 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
         print( "Could not connect to server: %s" % e)
 
 def process_data(data):
+    global api
     tweet = json.loads(data)
     #print(tweet)
     #posts.insert(tweet)
@@ -208,7 +211,7 @@ def process_data(data):
         followers = tweet['user']['followers_count']
         following = tweet['user']['friends_count']
         location = tweet['user']['location']
-        #print(location)
+        print(location)
         retweeted = tweet['retweeted']
         retweet_count = tweet['retweet_count']
         favorited = tweet['favorited']
@@ -217,21 +220,22 @@ def process_data(data):
         user_id = tweet['user']['id']
         text = tweet['text']
         place = tweet['place']
-        # if place:
-        # 	print(place)
-        # 	#place_data = api.geo(place.id)
-        # 	#print(place_data)
-        # 	#coordinates = place_data.centroid
+        if place:
+        	print(place.id)
+        	coorinates = place.id
+        	#place_data = api.geo_id(place.id)
+        	#print(place_data)
+        	#coordinates = place_data.centroid
 
         text = re.sub(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '', text)
         #print("text: {}".format(text))
         matches = tweets.find({'text' : text}).count()
-        #print(matches)
+        print(matches)
         if matches:
             pass
         else:
             #print("no matches")
-            get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_count, retweeted, retweet_count, followers, following, coordinates=None)
+            get_sentiment(created_at, tweet_id, username, user_id, text)
 
 
 class listener(StreamListener):
