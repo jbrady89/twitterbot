@@ -1,6 +1,7 @@
 import datetime, threading, re, time, json, requests, langid, sys, traceback
 import tweepy, pymongo, config
 from pymongo import MongoClient
+from geopy.geocoders import Nominatim
 from tweepy import Stream, OAuthHandler, StreamListener
 import twitter
 from sqlalchemy import create_engine, Column, Integer, Float, Text, Boolean
@@ -34,6 +35,7 @@ db = client.geostream
 print(db)
 posts = db.posts
 tweets = db.tweets
+geolocator = Nominatim()
 
 
 #print ( "Connecting to database\n")
@@ -211,7 +213,8 @@ def process_data(data):
         followers = tweet['user']['followers_count']
         following = tweet['user']['friends_count']
         location = tweet['user']['location']
-        print(location)
+        print(geolocator.geocode(location))
+
         retweeted = tweet['retweeted']
         retweet_count = tweet['retweet_count']
         favorited = tweet['favorited']
