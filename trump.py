@@ -202,6 +202,8 @@ def process_data(data):
 class listener(StreamListener):
 
     def on_data(self, data):
+
+        print(data);
         process_data(data)
 
     def on_error(self, status):
@@ -221,8 +223,10 @@ def start_stream(twitterStream, keywords):
 
 
 auth = OAuthHandler(consumer_key, consumer_secret)
+print(auth)
 auth.set_access_token(access_token, access_token_secret)
 twitterStream = Stream(auth, listener())
+print(twitterStream)
 api = tweepy.API(auth)
 
 keywords = [
