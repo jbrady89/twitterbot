@@ -27,6 +27,8 @@ access_token_secret = config.token_secret
 #data = r.json()
 #print(data)
 
+
+
 db_user = sys.argv[1]
 db_pass = sys.argv[2]
 print(db_user,db_pass)
@@ -65,7 +67,8 @@ def isTimeFormat(input):
 
         return False
 
-def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_count, retweeted, retweet_count, followers, following, text, coordinates):
+def get_sentiment(tweet):
+    print("getting sentiment")
     global count
     global positive_count
     global negative_count
@@ -78,132 +81,146 @@ def get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_c
     global total
     count += 1
 
+    print("the tweet", tweet)
+
+    time.sleep(5)
+
     #timestamp = datetime.datetime.now()
-    classify = langid.classify(text);
-    lang = classify[0]
+    # classify = langid.classify(tweet.text);
+    # lang = classify[0]
 
-    if lang == "en":
-        processed_text = TextBlob(text)
-        sentiment = processed_text.sentiment
-        polarity = sentiment.polarity
-        polarity_total = polarity_total + polarity
+    # print("getting sentiment for tweet: {}".format(tweet))
 
-        if polarity < 0:
-            negative_count += 1
-            #print("negative_count: {} \n".format(negative_count))
-            negative_polarity_average = (9999*negative_polarity_average + polarity) / 10000
-        elif polarity > 0:
-            positive_count += 1
-            #print("positive_count: {} \n".format(positive_count))
-            positive_polarity_average = (9999*positive_polarity_average + polarity) / 10000
-        elif polarity == 0.0:
-            neutral_count += 1
-            #print("neutral: {} \n".format(neutral_count))
-        else:
-            print("polarity is undefined \n")
+    # if lang == "en":
+    #     processed_text = TextBlob(tweet.text)
+    #     sentiment = processed_text.sentiment
+    #     polarity = sentiment.polarity
+    #     polarity_total = polarity_total + polarity
 
-        total = positive_count + negative_count + neutral_count
-        if polarity != 0.0:
-            polarity_average = (9999*polarity_average + polarity) / 10000
+    #     if polarity < 0:
+    #         negative_count += 1
+    #         #print("negative_count: {} \n".format(negative_count))
+    #         negative_polarity_average = (9999*negative_polarity_average + polarity) / 10000
+    #     elif polarity > 0:
+    #         positive_count += 1
+    #         #print("positive_count: {} \n".format(positive_count))
+    #         positive_polarity_average = (9999*positive_polarity_average + polarity) / 10000
+    #     elif polarity == 0.0:
+    #         neutral_count += 1
+    #         #print("neutral: {} \n".format(neutral_count))
+    #     else:
+    #         print("polarity is undefined \n")
 
-        # print("Total processed: {}".format(total))
-        # print("Average positive sentiment: {}".format(positive_polarity_average))
-        # print("Average negative sentiment: {}".format(negative_polarity_average))
-        # print("Polarity: {}".format(polarity))
-        # print("Average sentiment: {}".format(polarity_average))
-        # print("Positive: {}".format(positive_count))
-        # print("Negative: {}".format(negative_count))
-        # print("Neutral: {} \n".format(neutral_count))
+    #     total = positive_count + negative_count + neutral_count
+    #     if polarity != 0.0:
+    #         polarity_average = (9999*polarity_average + polarity) / 10000
 
-    else:
-        print("the tweet is not in english")
-        return
+    #     # print("Total processed: {}".format(total))
+    #     # print("Average positive sentiment: {}".format(positive_polarity_average))
+    #     # print("Average negative sentiment: {}".format(negative_polarity_average))
+    #     # print("Polarity: {}".format(polarity))
+    #     # print("Average sentiment: {}".format(polarity_average))
+    #     # print("Positive: {}".format(positive_count))
+    #     # print("Negative: {}".format(negative_count))
+    #     # print("Neutral: {} \n".format(neutral_count))
 
-     #http://stackoverflow.com/questions/5729500/how-does-sqlalchemy-handle-unique-constraint-in-table-definition
-    # in order to get EST
-    #print("90: " , created_at)
-    #check the format and adjust accordingly
-    #search method and stream method give different values for "created_at"
-    if isTimeFormat(created_at):
+    # else:
+    #     print("the tweet is not in english")
+    #     return
 
-        formatted_date = time.strftime('%Y-%m-%d %H:%M:%S', time.strptime(created_at,'%a %b %d %H:%M:%S +0000 %Y'))
-        #http://stackoverflow.com/questions/9637838/convert-string-date-to-timestamp-in-python
-        date_in_seconds = time.mktime(datetime.datetime.strptime(formatted_date, "%Y-%m-%d %H:%M:%S").timetuple())
-        # subtract 5 hours from UTC to get EST
-        adjusted_time = int(date_in_seconds) - 18000
-        timestamp = datetime.datetime.fromtimestamp(adjusted_time).strftime('%Y-%m-%d %H:%M:%S')
+    #  #http://stackoverflow.com/questions/5729500/how-does-sqlalchemy-handle-unique-constraint-in-table-definition
+    # # in order to get EST
+    # #print("90: " , created_at)
+    # #check the format and adjust accordingly
+    # #search method and stream method give different values for "created_at"
+    # if isTimeFormat(tweet.created_at):
 
-    else:
-        #print(formatted_date)
-        timestamp = created_at
+    #     formatted_date = time.strftime('%Y-%m-%d %H:%M:%S', time.strptime(created_at,'%a %b %d %H:%M:%S +0000 %Y'))
+    #     #http://stackoverflow.com/questions/9637838/convert-string-date-to-timestamp-in-python
+    #     date_in_seconds = time.mktime(datetime.datetime.strptime(formatted_date, "%Y-%m-%d %H:%M:%S").timetuple())
+    #     # subtract 5 hours from UTC to get EST
+    #     adjusted_time = int(date_in_seconds) - 18000
+    #     timestamp = datetime.datetime.fromtimestamp(adjusted_time).strftime('%Y-%m-%d %H:%M:%S')
 
-    user = posts.find({'user.screen_name' : username}).count()
+    # else:
+    #     #print(formatted_date)
+    #     timestamp = created_at
+
+    # user = posts.find({'user.screen_name' : username}).count()
         
-    timestamp = time.time() * 1000
-    tweet = {
-        'tweet_id' : tweet_id,
-        'user_id' : user_id,
-        'username' : username,
-        'created_at' : created_at,
-        'timestamp' : timestamp,
-        'sentiment' : polarity,
-        'average_sentiment' : polarity_average,
-        'text' : text
-    }
+    # timestamp = time.time() * 1000
+    # props = {
+    #     'timestamp' : timestamp,
+    #     'sentiment' : polarity,
+    #     'average_sentiment' : polarity_average,
+    # }
 
-    # if coordinates:
-    # 	print(coordinates)
-    # 	tweet.coordinates = coordinates
+    # tweet.update(props)
 
+    # # if coordinates:
+    # # 	print(coordinates)
+    # # 	tweet.coordinates = coordinates
+    # print(tweet)
 
-    try:
-    	print("saving record")
-    	tweets.insert(tweet)
-    except pymongo.errors.OperationFailure as e:
-        print( "Could not connect to server: %s" % e)
+    # try:
+    # 	print("saving record")
+    # 	tweets.insert(tweet)
+    # except pymongo.errors.OperationFailure as e:
+    #     print( "Could not connect to server: %s" % e)
 
 def process_data(data):
     tweet = json.loads(data)
 
-    if 'RT' not in tweet['text'].upper(): 
+    #print(tweet['text'])
+    if 'RT @' in tweet['text']: 
+        pass
+        #print('retweet')
+        #print(tweet['text'])
+        #time.sleep(5)
+        #print(tweet['text'])
         #print(tweet['coordinates'])
-        tweet_id = tweet['id']
-        username = tweet['user']['screen_name']
-        followers = tweet['user']['followers_count']
-        following = tweet['user']['friends_count']
-        location = tweet['user']['location']
-        retweeted = tweet['retweeted']
-        retweet_count = tweet['retweet_count']
-        favorited = tweet['favorited']
-        favorite_count = tweet['favorite_count']
-        created_at = tweet['created_at']
-        user_id = tweet['user']['id']
-        text = tweet['text']
-        place = tweet['place']
+        # tweet_id = tweet['id']
+        # username = tweet['user']['screen_name']
+        # followers = tweet['user']['followers_count']
+        # following = tweet['user']['friends_count']
+        # location = tweet['user']['location']
+        # retweeted = tweet['retweeted']
+        # retweet_count = tweet['retweet_count']
+        # favorited = tweet['favorited']
+        # favorite_count = tweet['favorite_count']
+        # created_at = tweet['created_at']
+        # user_id = tweet['user']['id']
+        # text = tweet['text']
+        # place = tweet['place']
+        #pass
+    else:
+        tweet = {
+            tweet_id : tweet['id'],
+            username : tweet['user']['screen_name'],
+            user_id :tweet['user']['id'],
+            created_at : tweet['created_at'],
+            text : tweet['text']
+        }
         # if place:
         # 	print(place)
         # 	#place_data = api.geo(place.id)
         # 	#print(place_data)
         # 	#coordinates = place_data.centroid
 
-        text = re.sub(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '', text)
-        print("text: {}".format(text))
-
-        matches = tweets.find({'text' : text}).count()
+        #tweet.text = re.sub(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '', text)
+        #print("text: {}".format(tweet.text))
+        print("not a rt")
+        #matches = tweets.find({'text' : tweet.text}).count()
         #print(matches)
-
-        if matches:
-            pass
-        else:
-            print("no matches")
-            get_sentiment(created_at, tweet_id, username, user_id, favorited, favorite_count, retweeted, retweet_count, followers, following, coordinates=None)
+        #if not matches:
+        get_sentiment(tweet)
 
 
 class listener(StreamListener):
 
     def on_data(self, data):
 
-        print(data);
+        #print(data);
         process_data(data)
 
     def on_error(self, status):
@@ -212,7 +229,7 @@ class listener(StreamListener):
 def start_stream(twitterStream, keywords):
     while True:  #Endless loop: personalize to suit your own purposes
         try:
-            twitterStream.filter(track=keywords, languages=["en"] )
+            twitterStream.filter(track=keywords, languages=["en"])
 
         except:
             #e = sys.exc_info()[0]  #Get exception info (optional)
@@ -231,7 +248,7 @@ api = tweepy.API(auth)
 
 keywords = [
             
-            "trump"
+            "BTC"
 
         ]
 
