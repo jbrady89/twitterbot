@@ -182,32 +182,8 @@ def get_sentiment(tweet):
 def process_data(data):
     tweet = json.loads(data)
 
-    #print(tweet)
-    #time.sleep(5)
-
-    #print(tweet['text'])
     if 'RT @' in tweet['text']: 
-        print("is RT")
         pass
-        #print('retweet')
-        #print(tweet['text'])
-        #time.sleep(5)
-        #print(tweet['text'])
-        #print(tweet['coordinates'])
-        # tweet_id = tweet['id']
-        # username = tweet['user']['screen_name']
-        # followers = tweet['user']['followers_count']
-        # following = tweet['user']['friends_count']
-        # location = tweet['user']['location']
-        # retweeted = tweet['retweeted']
-        # retweet_count = tweet['retweet_count']
-        # favorited = tweet['favorited']
-        # favorite_count = tweet['favorite_count']
-        # created_at = tweet['created_at']
-        # user_id = tweet['user']['id']
-        # text = tweet['text']
-        # place = tweet['place']
-        #pass
     else:
         newTweet = {
             "tweet_id" : tweet['id'],
@@ -256,19 +232,11 @@ def start_stream(twitterStream, keywords):
             twitterStream.filter(track=keywords, languages=["en"])
 
         except:
-            #e = sys.exc_info()[0]  #Get exception info (optional)
-            #print ('ERROR:',e ) #Print exception info (optional)
+            e = sys.exc_info()[0]  #Get exception info (optional)
+            print ('ERROR:',e ) #Print exception info (optional)
             #print(traceback.format_exc())
             twitterStream = Stream(auth, listener())
             continue
-
-
-# auth = OAuthHandler(consumer_key, consumer_secret)
-# print(auth)
-# auth.set_access_token(access_token, access_token_secret)
-# twitterStream = Stream(auth, listener())
-# print(twitterStream)
-# api = tweepy.API(auth)
 
 keywords = [
             
@@ -278,7 +246,3 @@ keywords = [
 
 twitterStream = Stream(auth, listener())
 twitterStream.filter(track=keywords)
-
-#prevent this function from starting again when fill.py is run
-#if __name__ == "__main__":
-    #start_stream(twitterStream, keywords)
