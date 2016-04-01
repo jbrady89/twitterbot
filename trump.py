@@ -1,35 +1,18 @@
 import datetime, threading, re, time, json, requests, langid, sys, traceback
 import tweepy, pymongo
 import credentials as config
-from pymongo import MongoClient
+import Queue
 #from geopy.geocoders import Nominatim
 from tweepy import Stream, OAuthHandler, StreamListener
-#import twitter
-# from sqlalchemy import create_engine, Column, Integer, Float, Text, Boolean
-# from sqlalchemy import DateTime
-# from sqlalchemy import or_
-# from sqlalchemy.ext.declarative import declarative_base
-# from sqlalchemy.orm import sessionmaker
-# from sqlalchemy_declarative import Tweet, User, Price
 from textblob import TextBlob
+from pymongo import MongoClient
+from threading import Thread
 
 consumer_key = config.key
 consumer_secret = config.secret 
 access_token = config.token
 access_token_secret = config.token_secret
-# tapi = twitter.API(consumer_key=consumer_key, 
-# 		consumer_secret=consumer_secret, 
-# 		access_token_key=access_token, 
-# 		access_token_secret=access_token_secret)
-
-# print(tapi.verifyCredenials())
-#r = Twitter.request('geo/id/%s' % '27c45d804c777999.json')
-#data = r.json()
-#print(data)
-
-
-
-
+tweet_queue = Queue.Queue(maxsize=0)
 
 db_user = sys.argv[1]
 db_pass = sys.argv[2]
@@ -48,10 +31,6 @@ auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 
 api = tweepy.API(auth)
-
-#api.update_status(status="tweepy tessst")
-
-
 
 count = 0
 positive_count = 0
@@ -126,24 +105,12 @@ def get_sentiment(tweet):
         if polarity != 0.0:
             polarity_average = (9999*polarity_average + polarity) / 10000
 
-        # print("Total processed: {}".format(total))
-        # print("Average positive sentiment: {}".format(positive_polarity_average))
-        # print("Average negative sentiment: {}".format(negative_polarity_average))
-        # print("Polarity: {}".format(polarity))
-        # print("Average sentiment: {}".format(polarity_average))
-        # print("Positive: {}".format(positive_count))
-        # print("Negative: {}".format(negative_count))
-        # print("Neutral: {} \n".format(neutral_count))
-
     else:
         print("the tweet is not in english")
         return
 
-    #  #http://stackoverflow.com/questions/5729500/how-does-sqlalchemy-handle-unique-constraint-in-table-definition
     # # in order to get EST
-    # #print("90: " , created_at)
     # #check the format and adjust accordingly
-    # #search method and stream method give different values for "created_at"
     if isTimeFormat(tweet['created_at']):
 
         formatted_date = time.strftime('%Y-%m-%d %H:%M:%S', time.strptime(tweet['created_at'],'%a %b %d %H:%M:%S +0000 %Y'))
@@ -154,10 +121,7 @@ def get_sentiment(tweet):
         timestamp = datetime.datetime.fromtimestamp(adjusted_time).strftime('%Y-%m-%d %H:%M:%S')
 
     else:
-        #print(formatted_date)
         timestamp = created_at
-
-    # user = posts.find({'user.screen_name' : username}).count()
         
     timestamp = time.time() * 1000
     props = {
@@ -180,69 +144,77 @@ def get_sentiment(tweet):
         print( "Could not connect to server: %s" % e)
 
 def process_data(data):
+
     tweet = json.loads(data)
+    if tweet.get('text'):
+        if 'RT @' in tweet['text']: 
+            pass
+        else:
+            newTweet = {
+                "tweet_id" : tweet['id'],
+                "username" : tweet['user']['screen_name'],
+                "user_id" :tweet['user']['id'],
+                "created_at": tweet['created_at'],
+                "text" : tweet['text']
+            }
+            # TODO: add location to the saved properties
+            # if place:
+            # 	print(place)
+            # 	#place_data = api.geo(place.id)
+            # 	#print(place_data)
+            # 	#coordinates = place_data.centroid
 
-    if 'RT @' in tweet['text']: 
-        pass
-    else:
-        newTweet = {
-            "tweet_id" : tweet['id'],
-            "username" : tweet['user']['screen_name'],
-            "user_id" :tweet['user']['id'],
-            "created_at": tweet['created_at'],
-            "text" : tweet['text']
-        }
-        # if place:
-        # 	print(place)
-        # 	#place_data = api.geo(place.id)
-        # 	#print(place_data)
-        # 	#coordinates = place_data.centroid
+            #tweet.text = re.sub(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '', text)
+            #print("text: {}".format(tweet.text))
+            print("not a rt")
+            print(newTweet['text'])
+            try:
+                matches = tweets.find({'text' : newTweet['text']}).count()
+            except: 
+                e = sys.exc_info()[0]  #Get exception info (optional)
+                print ('ERROR:',e ) #Print exception info (optional)
 
-        #tweet.text = re.sub(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '', text)
-        #print("text: {}".format(tweet.text))
-        print("not a rt")
-        print(newTweet['text'])
-        try:
-            matches = tweets.find({'text' : newTweet['text']}).count()
-        except: 
-            e = sys.exc_info()[0]  #Get exception info (optional)
-            print ('ERROR:',e ) #Print exception info (optional)
-        
-        print(matches)
-        #time.sleep(5)
-
-        if not matches:
-            get_sentiment(newTweet)
-
+            if not matches:
+                get_sentiment(newTweet)
 
 class listener(StreamListener):
 
     def on_data(self, data):
 
-        #print(data);
-        process_data(data)
+        #tweet = json.loads(data)
+        tweet_queue.put(data)            
 
     def on_error(self, status):
         print( status.text )
 
-def start_stream(twitterStream, keywords):
-    while True:  #Endless loop: personalize to suit your own purposes
-        print("starting stream...")
-        try:
-            twitterStream.filter(track=keywords, languages=["en"])
+# def start_stream(twitterStream, keywords):
+#     while True:
+#         print("starting stream...")
+#         try:
+#             twitterStream.filter(track=keywords, languages=["en"])
 
-        except:
-            e = sys.exc_info()[0]  #Get exception info (optional)
-            print ('ERROR:',e ) #Print exception info (optional)
-            #print(traceback.format_exc())
-            twitterStream = Stream(auth, listener())
-            continue
+#         except:
+#             e = sys.exc_info()[0]  #Get exception info (optional)
+#             print ('ERROR:',e ) #Print exception info (optional)
+#             #print(traceback.format_exc())
+#             twitterStream = Stream(auth, listener())
+#             continue
 
+def process_tweet_queue(tweet_queue):
+    while True:
+        tweet = tweet_queue.get()
+        process_data(tweet)
+        tweet_queue.task_done()
+   
 keywords = [
             
             "Trump"
 
         ]
+
+tweet_processor = Thread(target=process_tweet_queue, args=(tweet_queue,))
+tweet_processor.setDaemon(True)
+tweet_processor.start()
 
 twitterStream = Stream(auth, listener())
 twitterStream.filter(track=keywords)
